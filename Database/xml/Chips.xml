@@ -642,10 +642,19 @@
 	<Part>
 		<PartNumber>AP63203WU-7</PartNumber>
 		<Description>DC-DC Преобразователь</Description>
-		<Comment>0</Comment>
-		<LibraryPath>Schematic\.SchLib</LibraryPath>
+		<Comment>RTL8888</Comment>
+		<LibraryPath>Schematic\RTL8888.SchLib</LibraryPath>
 		<LibraryRef>AP63203WU-7</LibraryRef>
 		<FootprintPath1>Footprints\SOT23-8.PcbLib</FootprintPath1>
 		<FootprintRef1>SOT23-8</FootprintRef1>
+	</Part>
+	<Part>
+		<PartNumber>RTL8888</PartNumber>
+		<Description>Неуравновешенный коммутатор 7 уровня на 52 порта 2.5 Gbe</Description>
+		<Comment>RTL8888</Comment>
+		<LibraryPath>Schematic\RTL8367RB-VB_iso.SchLib</LibraryPath>
+		<LibraryRef>RTL8367RB-VB_iso</LibraryRef>
+		<FootprintPath1>Footprints\LQFP128_14x14_exposed_hui.PcbLib</FootprintPath1>
+		<FootprintRef1>LQFP128_14x14_exposed_hui</FootprintRef1>
 	</Part>
 </Chips>
