@@ -657,4 +657,13 @@
 		<FootprintPath1>Footprints\SOT23-5.PcbLib</FootprintPath1>
 		<FootprintRef1>SOT23-5</FootprintRef1>
 	</Part>
+	<Part>
+		<PartNumber>ADM51</PartNumber>
+		<Description>Приемопередатчик RS485 с гальванической привязкой к VBAT</Description>
+		<Comment>ADM51</Comment>
+		<LibraryPath>Schematic\ADM51.SchLib</LibraryPath>
+		<LibraryRef>ADM51</LibraryRef>
+		<FootprintPath1>Footprints\SOIC-16W.PcbLib</FootprintPath1>
+		<FootprintRef1>SOIC-16W</FootprintRef1>
+	</Part>
 </Chips>
