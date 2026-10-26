@@ -4,6 +4,7 @@ import json
 import os
 from datetime import datetime, timezone
 from pathlib import Path
+from resolution_ui import write_resolution_ui
 
 
 def render(directory, outcome, repo, number, fork=False):
@@ -129,6 +130,11 @@ def render(directory, outcome, repo, number, fork=False):
             parts.append('</table><p>Полный список — в validation.json в Artifacts. Исправьте ошибки и отправьте новый коммит. Выбор ours/theirs не исправляет ошибки компонентов.</p>')
         else:
             parts.append('<p>Ошибок компонентов не найдено.</p>')
+    if conflicts:
+        run_id = os.environ.get('GITHUB_RUN_ID', '')
+        artifacts_url = f'https://github.com/{repo}/actions/runs/{run_id}#artifacts' if run_id else url + 'xlsm-check.yml'
+        parts.append('<h3>Индивидуальный выбор сторон</h3><p>Скачайте артефакт этого запуска и откройте <b>resolve-conflicts.html</b> в браузере. Выберите ours/theirs для каждого конфликта и нажмите «Скопировать решения». Затем в workflow объединения выберите <b>manual</b> и вставьте текст в <b>resolutions_json</b>. Редактировать JSON вручную не нужно.</p>')
+        parts.append(f'<p><a href="{esc(artifacts_url)}">Открыть артефакты запуска</a>. Решения привязаны к этим версиям книг; после изменения PR нужен новый отчёт.</p>')
     if outcome != 'success' and not unresolved:
         parts.append('<h3>Что мешает завершить слияние</h3><p>' + esc(message) + '</p>')
     parts.append('<h3>Что делать дальше</h3>')
@@ -147,6 +153,7 @@ def render(directory, outcome, repo, number, fork=False):
 
 
 if __name__ == '__main__':
+    write_resolution_ui('xlsm-artifacts', os.environ['GITHUB_REPOSITORY'], os.environ.get('PR_NUMBER', ''))
     output = render('xlsm-artifacts', os.environ.get('MERGE_OUTCOME', 'failure'),
                     os.environ['GITHUB_REPOSITORY'], os.environ.get('PR_NUMBER', ''),
                     os.environ.get('IS_FORK') == 'true')
@@ -154,6 +161,7 @@ if __name__ == '__main__':
     Path('xlsm-artifacts/summary.html').write_text(output, encoding='utf-8')
     with open(os.environ['GITHUB_STEP_SUMMARY'], 'a', encoding='utf-8') as stream:
         stream.write(output)
+
 
 
 
