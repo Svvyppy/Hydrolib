@@ -66,6 +66,7 @@ class Resolver:
         self.choices = {}
         self.conflicts = []
         self.seen = set()
+        self.changes = None
         if document is not None:
             if document.get('version') != 1 or document.get('inputs') != self.inputs:
                 raise Conflict('Resolution file is stale: regenerate it for these three workbook versions')
@@ -107,6 +108,8 @@ class Resolver:
     def report(self, status, message=None):
         result = {'version': 1, 'status': status, 'inputs': self.inputs,
                   'conflicts': self.conflicts, 'conflict_side': self.conflict_side or 'manual'}
+        if self.changes is not None:
+            result['changes'] = self.changes
         if message:
             result['message'] = message
         return result
@@ -264,6 +267,48 @@ class Book:
 
 def xml(data):
     return ET.tostring(data, xml_declaration=True, encoding='UTF-8', standalone=True)
+
+
+def workbook_changes(before, after):
+    """Content delta against the target branch, keyed by stable Part Number.
+
+    Formula row offsets are normalized; caches and formatting are not data edits.
+    """
+    changes = {'added': [], 'deleted': [], 'modified': []}
+    def records(ws):
+        result = {}
+        for row in ws.iter_rows(min_row=2):
+            if not any(c.value is not None for c in row):
+                continue
+            key = ('part', str(row[0].value)) if row[0].value is not None else ('unkeyed', row[0].row)
+            result[key] = row
+        return result
+    def normalized(cell):
+        if cell.data_type == 'f':
+            try:
+                return formula(cell.value, cell.coordinate, f'{cell.column_letter}1')
+            except Conflict:
+                return (cell.coordinate, cell.value)
+        return cell.value
+    for ws in after:
+        old, new = records(before[ws.title]), records(ws)
+        for key in sorted(old.keys() | new.keys(), key=str):
+            context = {'sheet': ws.title, 'part': key[1]}
+            if key not in old or key not in new:
+                row = new[key] if key in new else old[key]
+                changes['added' if key in new else 'deleted'].append({**context, 'row': row[0].row})
+                continue
+            previous = {c.column: c for c in old[key]}
+            current = {c.column: c for c in new[key]}
+            for col in sorted(previous.keys() | current.keys()):
+                a, b = previous.get(col), current.get(col)
+                if (normalized(a) if a else None) == (normalized(b) if b else None):
+                    continue
+                changes['modified'].append({**context, 'row': new[key][0].row,
+                    'field': ws.cell(1, col).value or get_column_letter(col),
+                    'before': readable(a.value if a else None),
+                    'after': readable(b.value if b else None)})
+    return changes
 
 
 def merge(base_path, ours_path, theirs_path, output, resolver=None):
@@ -452,6 +497,7 @@ def merge(base_path, ours_path, theirs_path, output, resolver=None):
             z.writestr(name, value)
     # Validate the whole result before replacing output (which may be ours).
     check = openpyxl.load_workbook(BytesIO(buf.getvalue()), keep_vba=False)
+    resolver.changes = workbook_changes(theirs.wb, check)
     check.close()
     destination = Path(output)
     with tempfile.NamedTemporaryFile(dir=destination.parent, delete=False) as temp:
@@ -494,3 +540,4 @@ def main():
 
 if __name__ == '__main__':
     sys.exit(main())
+
