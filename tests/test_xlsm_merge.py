@@ -295,6 +295,37 @@ class MergeTests(unittest.TestCase):
         with ZipFile(self.output) as z:
             self.assertEqual(z.read('xl/vbaProject.bin'), b'theirs')
 
+    def test_excel_save_metadata_does_not_block_added_row(self):
+        with ZipFile(self.base) as z:
+            root = E.fromstring(z.read('xl/workbook.xml'))
+        E.SubElement(root, '{http://schemas.microsoft.com/office/spreadsheetml/2014/revision}revisionPtr', documentId='new-save-id')
+        E.SubElement(root, Q('fileVersion'), appName='xl', rupBuild='99999')
+        self.ours = self.variant('ours', {'A3': 'NEW', 'B3': 42, 'C3': '=A3&B3'},
+                                 part=('xl/workbook.xml', E.tostring(root)))
+        s = self.run_merge()
+        self.assertEqual(s['A3'].value, 'NEW')
+        self.assertEqual(s['B3'].value, 42)
+        self.assertEqual(s['C3'].value, '=A3&B3')
+        with ZipFile(self.output) as z:
+            saved = E.fromstring(z.read('xl/workbook.xml'))
+            self.assertEqual(saved.find('{*}revisionPtr').get('documentId'), 'new-save-id')
+
+    def test_real_workbook_property_change_still_blocks(self):
+        with ZipFile(self.base) as z:
+            root = E.fromstring(z.read('xl/workbook.xml'))
+        root.find(Q('workbookPr')).set('date1904', '1')
+        self.ours = self.variant('ours', {}, part=('xl/workbook.xml', E.tostring(root)))
+        with self.assertRaisesRegex(Conflict, 'Workbook structure'):
+            self.run_merge()
+
+    def test_workbook_protection_change_still_blocks(self):
+        with ZipFile(self.base) as z:
+            root = E.fromstring(z.read('xl/workbook.xml'))
+        root.find(Q('workbookProtection')).set('lockStructure', '1')
+        self.ours = self.variant('ours', {}, part=('xl/workbook.xml', E.tostring(root)))
+        with self.assertRaisesRegex(Conflict, 'Workbook structure'):
+            self.run_merge()
+
     def test_real_library_parallel_additions(self):
         self.base = Path(__file__).resolve().parents[1] / 'Database/Hydrolib_bd.xlsm'
         n = openpyxl.load_workbook(self.base)['Chips'].max_row + 1
