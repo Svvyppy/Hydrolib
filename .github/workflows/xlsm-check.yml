@@ -9,7 +9,7 @@ on:
   # Run even when the workbook has a Git merge conflict.
   # Execute trusted default-branch code; PR workbooks are read only as data.
   pull_request_target:
-    types: [opened, synchronize, reopened, ready_for_review]
+    types: [opened, synchronize, reopened, ready_for_review, edited]
 permissions:
   contents: read
   pull-requests: read
@@ -32,10 +32,18 @@ jobs:
           python-version: '3.12'
       - run: pip install -r tools/xlsm_merge/requirements.txt
       - run: python -m unittest discover -s tests -p 'test_xlsm*.py'
-      - run: python tools/xlsm_merge/ci.py
+      - id: merge
+        name: Проверить и объединить данные XLSM
+        run: python tools/xlsm_merge/ci.py
         env:
           PR_NUMBER: ${{ github.event.pull_request.number || inputs.pr_number }}
           GH_TOKEN: ${{ github.token }}
+      - name: Показать результат и дальнейшие действия
+        if: always()
+        run: python tools/xlsm_merge/summary.py
+        env:
+          MERGE_OUTCOME: ${{ steps.merge.outcome }}
+          PR_NUMBER: ${{ github.event.pull_request.number || inputs.pr_number }}
       - uses: actions/upload-artifact@v4
         if: always()
         with:

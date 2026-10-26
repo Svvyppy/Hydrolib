@@ -27,6 +27,7 @@ def main():
         'Authorization': 'Bearer ' + os.environ['GH_TOKEN'], 'Accept': 'application/vnd.github+json'})
     with urllib.request.urlopen(req) as response:
         pr = json.load(response)
+    (ARTIFACTS / 'context.json').write_text(json.dumps({'number': number, 'fork': pr['head']['repo']['full_name'] != repo}), encoding='utf-8')
     if pr['state'] != 'open':
         raise ValueError('PR must be open')
     conflict_side = os.environ.get('CONFLICT_SIDE', 'manual')
@@ -63,14 +64,6 @@ def main():
             report_path = ARTIFACTS / 'report.json'
             report = json.loads(report_path.read_text(encoding='utf-8')) if report_path.exists() else {}
             message = report.get('message', 'Workbook merge failed; see report artifact')
-            summary_path = os.environ.get('GITHUB_STEP_SUMMARY')
-            if summary_path:
-                summary = '<h3>XLSM merge check: требуется решение</h3><p>' + html.escape(message) + '</p>'
-                summary += '<p>Скачайте артефакт xlsm-merge-report или запустите Update PR with XLSM merge с выбором ours/theirs.</p>'
-                if any(c.get('kind') == 'binary_part' for c in report.get('conflicts', [])):
-                    summary += '<p>VBA-проект различается: он выбирается целиком из выбранной стороны, без объединения макросов.</p>'
-                with open(summary_path, 'a', encoding='utf-8') as stream:
-                    stream.write(summary + '\n')
             raise ValueError(message)
         if apply:
             # Use the trusted driver's absolute path, even if the PR edits tools/.
