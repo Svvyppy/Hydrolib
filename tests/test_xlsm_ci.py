@@ -79,14 +79,14 @@ class PipelineTests(unittest.TestCase):
         self.artifacts.mkdir()
         self.ci.ROOT = self.checkout
         self.ci.ARTIFACTS = self.artifacts
-        self.pr = {'state': 'open', 'base': {'sha': self.base_sha}, 'head': {
+        self.pr = {'state': 'open', 'base': {'sha': self.base_sha, 'ref': 'master'}, 'head': {
             'sha': self.head_sha, 'ref': 'feature', 'repo': {'full_name': 'test/library'}}}
 
     def invoke(self, document=None, apply=False, side='manual'):
         env = {'PR_NUMBER': '1', 'GITHUB_REPOSITORY': 'test/library', 'GH_TOKEN': 'test-token',
                'RESOLUTIONS_JSON': json.dumps(document) if document else '', 'CONFLICT_SIDE': side}
         with patch.dict(os.environ, env), patch.object(sys, 'argv', ['ci.py'] + (['--apply'] if apply else [])), \
-                patch.object(self.ci.urllib.request, 'urlopen', return_value=BytesIO(json.dumps(self.pr).encode())):
+                patch.object(self.ci.urllib.request, 'urlopen', side_effect=lambda *a, **k: BytesIO(json.dumps(self.pr).encode())):
             self.ci.main()
 
     def test_report_then_apply_selected_side_and_keep_independent_changes(self):
@@ -117,6 +117,49 @@ class PipelineTests(unittest.TestCase):
         self.assertEqual(s['D2'].value, 'theirs independent')
         report = json.loads((self.artifacts / 'report.json').read_text())
         self.assertEqual(report['conflicts'][0]['choice'], 'ours')
+
+    def fork_api(self, path, method='GET', payload=None):
+        if path == 'pulls/1':
+            return self.pr
+        if method == 'GET':
+            return self.created
+        self.payload = payload
+        self.created.append({'html_url': 'https://github.com/test/library/pull/2', 'number': 2})
+        return self.created[0]
+
+    def prepare_fork(self):
+        self.pr['head']['repo']['full_name'] = 'contributor/library'
+        self.git('--git-dir', str(self.remote), 'update-ref', 'refs/pull/1/head', self.head_sha)
+        self.created = []
+
+    def test_fork_creates_result_in_target_and_retry_reuses_pr(self):
+        self.prepare_fork()
+        with patch.object(self.ci, 'api', side_effect=self.fork_api):
+            self.invoke(apply=True, side='ours')
+            result = json.loads((self.artifacts / 'result.json').read_text())
+            self.assertEqual(result['mode'], 'fork_result')
+            self.assertEqual(self.payload['base'], 'master')
+            self.assertEqual(self.payload['head'], result['branch'])
+            self.assertIn('PR #1', self.payload['body'])
+            self.assertTrue(result['branch'].startswith('xlsm-resolved/pr-1-'))
+            self.assertEqual(self.git('--git-dir', str(self.remote), 'rev-parse', 'feature'), self.head_sha)
+            self.assertEqual(self.git('--git-dir', str(self.remote), 'rev-parse', 'master'), self.base_sha)
+            self.invoke(apply=True, side='ours')
+            self.assertEqual(len(self.created), 1)
+            self.assertEqual(json.loads((self.artifacts / 'result.json').read_text()), result)
+
+    def test_fork_snapshot_change_prevents_result_push(self):
+        self.prepare_fork()
+        calls = []
+        def api(path, **kwargs):
+            calls.append(path)
+            if len(calls) > 1:
+                return {**self.pr, 'state': 'closed'}
+            return self.pr
+        with patch.object(self.ci, 'api', side_effect=api):
+            with self.assertRaisesRegex(ValueError, 'изменился'):
+                self.invoke(apply=True, side='ours')
+        self.assertFalse(self.git('--git-dir', str(self.remote), 'for-each-ref', '--format=%(refname)', 'refs/heads/xlsm-resolved/'))
 
     def test_unresolved_apply_does_not_push(self):
         with self.assertRaisesRegex(ValueError, 'unresolved'):

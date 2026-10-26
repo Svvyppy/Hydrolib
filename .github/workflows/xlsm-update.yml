@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
     inputs:
       pr_number:
-        description: 'Номер PR (ветка должна находиться в этом репозитории)'
+        description: 'Номер PR, включая PR из личного форка'
         required: true
         type: string
       conflict_side:
@@ -21,7 +21,7 @@ on:
         type: string
 permissions:
   contents: write
-  pull-requests: read
+  pull-requests: write
 concurrency:
   group: xlsm-update-${{ inputs.pr_number }}
   cancel-in-progress: false

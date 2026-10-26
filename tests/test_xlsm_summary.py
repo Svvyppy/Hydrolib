@@ -20,4 +20,21 @@ class SummaryTests(unittest.TestCase):
             self.assertIn('&lt;script&gt;', text)
             self.assertIn('xlsm-update.yml', text)
             Path(d, 'context.json').write_text(json.dumps({'number': '3', 'fork': True}))
-            self.assertIn('из другого форка', render(d, 'failure', 'a/b', '3'))
+            self.assertIn('PR из форка', render(d, 'failure', 'a/b', '3'))
+
+    def test_unresolved_and_resolved_are_separate(self):
+        with tempfile.TemporaryDirectory() as d:
+            Path(d, 'report.json').write_text(json.dumps({'conflicts': [
+                {'part': 'A', 'base': 'old', 'ours': 'new', 'theirs': 'other', 'choice': None},
+                {'part': 'B', 'base': 'old', 'ours': 'new', 'theirs': 'other', 'choice': 'ours'}]}))
+            text = render(d, 'failure', 'a/b', '1')
+            self.assertIn('Нерешённые конфликты: 1', text)
+            self.assertIn('Разрешённые конфликты: 1', text)
+            self.assertIn('<th>Исходное</th>', text)
+
+    def test_structural_error_is_visible(self):
+        with tempfile.TemporaryDirectory() as d:
+            Path(d, 'report.json').write_text(json.dumps({'message': 'Column schema changed', 'conflicts': []}))
+            text = render(d, 'failure', 'a/b', '1')
+            self.assertIn('Что мешает завершить слияние', text)
+            self.assertIn('Column schema changed', text)

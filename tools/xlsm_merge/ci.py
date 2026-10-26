@@ -1,12 +1,13 @@
 """Trusted CI entrypoint: inspect PR data without executing code from the PR."""
 import json
-import html
 import os
 from pathlib import Path
 import subprocess
 import sys
 import tempfile
 import urllib.request
+import urllib.error
+from fork_result import publish, check_snapshot
 
 ROOT = Path(__file__).resolve().parents[2]
 WORKBOOK = 'Database/Hydrolib_bd.xlsm'
@@ -18,15 +19,27 @@ def git(*args, cwd=None, **kwargs):
     return subprocess.run(['git', *args], cwd=cwd or ROOT, check=True, **kwargs)
 
 
+def api(path, method='GET', payload=None):
+    req = urllib.request.Request('https://api.github.com/repos/' + os.environ['GITHUB_REPOSITORY'] + '/' + path,
+        data=json.dumps(payload).encode() if payload is not None else None, method=method,
+        headers={'Authorization': 'Bearer ' + os.environ['GH_TOKEN'],
+                 'Accept': 'application/vnd.github+json', 'Content-Type': 'application/json'})
+    try:
+        with urllib.request.urlopen(req, timeout=30) as response:
+            return json.load(response)
+    except urllib.error.HTTPError as error:
+        if method == 'POST' and path == 'pulls' and error.code == 403:
+            raise ValueError('Ветка результата создана, но создание PR запрещено. Проверьте Settings → Actions → General → Allow GitHub Actions to create and approve pull requests. После включения повторите запуск; ветка будет использована повторно.') from error
+        raise
+
+
 def main():
     number = os.environ['PR_NUMBER']
     if not number.isdecimal():
         raise ValueError('PR_NUMBER must be numeric')
     repo = os.environ['GITHUB_REPOSITORY']
-    req = urllib.request.Request(f'https://api.github.com/repos/{repo}/pulls/{number}', headers={
-        'Authorization': 'Bearer ' + os.environ['GH_TOKEN'], 'Accept': 'application/vnd.github+json'})
-    with urllib.request.urlopen(req) as response:
-        pr = json.load(response)
+    pr = api('pulls/' + number)
+    fork = pr['head']['repo']['full_name'] != repo
     (ARTIFACTS / 'context.json').write_text(json.dumps({'number': number, 'fork': pr['head']['repo']['full_name'] != repo}), encoding='utf-8')
     if pr['state'] != 'open':
         raise ValueError('PR must be open')
@@ -34,10 +47,11 @@ def main():
     if conflict_side not in ('manual', 'ours', 'theirs'):
         raise ValueError('CONFLICT_SIDE must be manual, ours or theirs')
     apply = '--apply' in sys.argv
-    if apply and pr['head']['repo']['full_name'] != repo:
-        raise ValueError('Apply is supported only for branches in this repository; forks use local merge')
     git('config', 'core.hooksPath', '/dev/null')
-    git('fetch', 'origin', pr['base']['sha'], pr['head']['sha'])
+    git('fetch', 'origin', pr['base']['sha'])
+    git('fetch', 'origin', 'refs/pull/' + number + '/head' if fork else pr['head']['sha'])
+    if fork and git('rev-parse', 'FETCH_HEAD', capture_output=True, text=True).stdout.strip() != pr['head']['sha']:
+        raise ValueError('Ветка автора обновилась. Повторите запуск проверки.')
     base_sha = pr['base']['sha']
     head_sha = pr['head']['sha']
     ancestor = git('merge-base', base_sha, head_sha, capture_output=True, text=True).stdout.strip()
@@ -84,9 +98,15 @@ def main():
                 git('config', 'user.name', 'github-actions[bot]')
                 git('config', 'user.email', '41898282+github-actions[bot]@users.noreply.github.com')
                 git('merge', '--no-edit', base_sha, cwd=worktree)
-                branch = pr['head']['ref']
-                git('check-ref-format', 'refs/heads/' + branch)
-                git('push', 'origin', 'HEAD:refs/heads/' + branch, cwd=worktree)
+                if fork:
+                    publish(git, api, repo, number, pr, worktree, WORKBOOK, conflict_side,
+                            json.loads(resolution_json) if resolution_json else None, ARTIFACTS)
+                else:
+                    check_snapshot(api, number, pr)
+                    branch = pr['head']['ref']
+                    git('check-ref-format', 'refs/heads/' + branch)
+                    git('push', 'origin', 'HEAD:refs/heads/' + branch, cwd=worktree)
+                    (ARTIFACTS / 'result.json').write_text(json.dumps({'mode': 'updated', 'branch': branch}), encoding='utf-8')
             finally:
                 git('worktree', 'remove', '--force', str(worktree))
     print('Workbook merged. Open in Excel and recalculate before use in Altium.')
