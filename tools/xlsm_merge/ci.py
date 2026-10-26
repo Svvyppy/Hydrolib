@@ -9,6 +9,8 @@ import urllib.request
 import urllib.error
 from fork_result import publish, check_snapshot
 from validate import require_valid
+from merge import workbook_changes
+import openpyxl
 
 ROOT = Path(__file__).resolve().parents[2]
 WORKBOOK = 'Database/Hydrolib_bd.xlsm'
@@ -32,6 +34,22 @@ def api(path, method='GET', payload=None):
         if method == 'POST' and path == 'pulls' and error.code == 403:
             raise ValueError('Ветка результата создана, но создание PR запрещено. Проверьте Settings → Actions → General → Allow GitHub Actions to create and approve pull requests. После включения повторите запуск; ветка будет использована повторно.') from error
         raise
+
+
+def write_pr_changes(ancestor, head, output):
+    """Independent of merge/validation: proposed edits, never a merged result."""
+    books = []
+    try:
+        for path in (ancestor, head):
+            books.append(openpyxl.load_workbook(path, data_only=False))
+        document = {'comparison': 'ancestor_to_pr',
+                    'changes': workbook_changes(*books)}
+    except Exception as error:
+        document = {'comparison': 'ancestor_to_pr', 'message': str(error)}
+    finally:
+        for book in books:
+            book.close()
+    Path(output).write_text(json.dumps(document, ensure_ascii=False, indent=2), encoding='utf-8')
 
 
 def main():
@@ -70,6 +88,7 @@ def main():
             p = ARTIFACTS / (label + '.xlsm')
             p.write_bytes(git('show', f'{sha}:{WORKBOOK}', capture_output=True).stdout)
             paths.append(str(p))
+        write_pr_changes(paths[0], paths[1], ARTIFACTS / 'pr-changes.json')
         require_valid(paths[1], paths[2], ARTIFACTS / 'validation.json', 'PR')
         command = [sys.executable, str(ROOT / 'tools/xlsm_merge/merge.py'), *paths,
                    str(ARTIFACTS / 'Hydrolib_bd.xlsm'), '--conflict-side', conflict_side, '--report', str(ARTIFACTS / 'report.json')]
@@ -122,4 +141,5 @@ if __name__ == '__main__':
         (ARTIFACTS / 'failure.txt').write_text(str(error), encoding='utf-8')
         print(error, file=sys.stderr)
         sys.exit(1)
+
 

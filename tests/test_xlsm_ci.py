@@ -95,6 +95,13 @@ class PipelineTests(unittest.TestCase):
         report = json.loads((self.artifacts / 'report.json').read_text())
         self.assertEqual(len(report['conflicts']), 1)
         self.assertEqual(report['conflicts'][0]['ours'], 20)
+        proposed = json.loads((self.artifacts / 'pr-changes.json').read_text())
+        fields = {c['field']: c for c in proposed['changes']['modified']}
+        self.assertEqual(fields['Value']['before'], 10)
+        self.assertEqual(fields['Value']['after'], 20)
+        self.assertEqual(fields['Left']['after'], 'ours independent')
+        self.assertNotIn('Right', fields)
+
         for c in report['conflicts']:
             c['choice'] = 'theirs'
         self.invoke(report, apply=True)
@@ -178,6 +185,7 @@ class PipelineTests(unittest.TestCase):
         report = json.loads((self.artifacts / 'validation.json').read_text())
         self.assertEqual(report['errors'], 1)
         self.assertEqual(report['issues'][0]['cell'], 'A3')
+        self.assertTrue((self.artifacts / 'pr-changes.json').exists())
         self.assertFalse((self.artifacts / 'result.json').exists())
 
     def test_unresolved_apply_does_not_push(self):
@@ -192,4 +200,5 @@ class PipelineTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
 

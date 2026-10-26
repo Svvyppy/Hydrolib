@@ -35,3 +35,27 @@ class ChangesTests(unittest.TestCase):
             self.assertEqual(changes['modified'], [])
         finally:
             fixture.doCleanups()
+
+
+
+class AmbiguousChangesTests(unittest.TestCase):
+    def test_duplicate_does_not_silently_hide_records(self):
+        from merge import Conflict
+        before, after = openpyxl.Workbook(), openpyxl.Workbook()
+        for book in (before, after):
+            book.active.append(['Part Number', 'Value'])
+        after.active.append(['A', 1])
+        after.active.append(['A', 2])
+        with self.assertRaisesRegex(Conflict, 'duplicate'):
+            workbook_changes(before, after)
+
+
+    def test_schema_change_is_not_reported_as_value_edits(self):
+        from merge import Conflict
+        before, after = openpyxl.Workbook(), openpyxl.Workbook()
+        before.active.append(['Part Number', 'Value'])
+        after.active.append(['Part Number', 'Different field'])
+        for book in (before, after):
+            book.active.append(['A', 1])
+        with self.assertRaisesRegex(Conflict, 'schema changed'):
+            workbook_changes(before, after)

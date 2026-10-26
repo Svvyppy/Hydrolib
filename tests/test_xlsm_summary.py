@@ -72,3 +72,28 @@ class SummaryTests(unittest.TestCase):
             self.assertIn('abcdef123456', text)
             self.assertIn('/actions/runs/123/attempts/2', text)
             self.assertIn('Re-run использует прежнюю', text)
+
+
+
+    def test_proposed_changes_visible_with_unresolved_conflict(self):
+        with tempfile.TemporaryDirectory() as d:
+            Path(d, 'pr-changes.json').write_text(json.dumps({'comparison': 'ancestor_to_pr', 'changes': {
+                'added': [{'sheet': 'Chips', 'part': '<NEW>', 'row': 3}],
+                'deleted': [{'sheet': 'Chips', 'part': 'OLD', 'row': 4}],
+                'modified': [{'sheet': 'Chips', 'part': 'A', 'row': 2, 'field': 'Value', 'before': 10, 'after': 20}]}}))
+            Path(d, 'report.json').write_text(json.dumps({'conflicts': [
+                {'part': 'A', 'field': 'Value', 'base': 10, 'ours': 20, 'theirs': 30, 'choice': None}]}))
+            text = render(d, 'failure', 'a/b', '13')
+            self.assertIn('Изменения автора PR', text)
+            self.assertIn('В PR: добавлено 1 · Изменено 1 · Удалено 1', text)
+            self.assertIn('&lt;NEW&gt;', text)
+            self.assertIn('<td>10</td><td>20</td>', text)
+            self.assertIn('Нерешённые конфликты: 1', text)
+            self.assertNotIn('Итог слияния: изменения', text)
+
+    def test_unavailable_proposed_changes_explains_reason(self):
+        with tempfile.TemporaryDirectory() as d:
+            Path(d, 'pr-changes.json').write_text(json.dumps({'message': 'duplicate <ID>'}))
+            text = render(d, 'failure', 'a/b', '13')
+            self.assertIn('Не удалось составить достоверный список', text)
+            self.assertIn('duplicate &lt;ID&gt;', text)

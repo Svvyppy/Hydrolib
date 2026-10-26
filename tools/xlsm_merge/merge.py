@@ -281,6 +281,8 @@ def workbook_changes(before, after):
             if not any(c.value is not None for c in row):
                 continue
             key = ('part', str(row[0].value)) if row[0].value is not None else ('unkeyed', row[0].row)
+            if key in result:
+                raise Conflict(f'{ws.title}: duplicate Part Number {key[1]!r}; change list is ambiguous')
             result[key] = row
         return result
     def normalized(cell):
@@ -290,7 +292,12 @@ def workbook_changes(before, after):
             except Conflict:
                 return (cell.coordinate, cell.value)
         return cell.value
+    if before.sheetnames != after.sheetnames:
+        raise Conflict('Sheet names/order changed; component change list is unavailable')
     for ws in after:
+        headers = lambda sheet: {c.column: c.value for c in sheet[1] if c.value is not None}
+        if headers(before[ws.title]) != headers(ws):
+            raise Conflict(f'{ws.title}: column schema changed; component change list is unavailable')
         old, new = records(before[ws.title]), records(ws)
         for key in sorted(old.keys() | new.keys(), key=str):
             context = {'sheet': ws.title, 'part': key[1]}
@@ -540,4 +547,5 @@ def main():
 
 if __name__ == '__main__':
     sys.exit(main())
+
 
