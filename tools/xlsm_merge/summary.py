@@ -16,6 +16,9 @@ def render(directory, outcome, repo, number, fork=False):
     report = json.loads(report_path.read_text(encoding='utf-8')) if report_path.exists() else {}
     validation_path = directory / 'validation.json'
     validation = json.loads(validation_path.read_text(encoding='utf-8')) if validation_path.exists() else None
+    proposed_path = directory / 'pr-changes.json'
+    proposed = json.loads(proposed_path.read_text(encoding='utf-8')) if proposed_path.exists() else {}
+    proposed_changes = proposed.get('changes')
     conflicts = report.get('conflicts', [])
     unresolved = [c for c in conflicts if c.get('choice') is None]
     esc = lambda value: html.escape(str(value))
@@ -43,6 +46,10 @@ def render(directory, outcome, repo, number, fork=False):
         modified = changes.get('modified', [])
         count = len({(c['sheet'], str(c['part'])) for c in modified})
         parts.insert(1, f"<p><strong>Добавлено {len(changes.get('added', []))} · Изменено {count} · Удалено {len(changes.get('deleted', []))} · Конфликтов {len(unresolved)}</strong></p>")
+    elif proposed_changes is not None:
+        modified = proposed_changes.get('modified', [])
+        count = len({(c['sheet'], str(c['part'])) for c in modified})
+        parts.insert(1, f"<p><strong>В PR: добавлено {len(proposed_changes.get('added', []))} · Изменено {count} · Удалено {len(proposed_changes.get('deleted', []))} · Нерешённых конфликтов {len(unresolved)}</strong></p>")
     else:
         parts.insert(1, f'<p><strong>Нерешённых конфликтов: {len(unresolved)}. Итог изменений пока не рассчитан.</strong></p>')
     sha = os.environ.get('GITHUB_SHA', '')
@@ -60,6 +67,22 @@ def render(directory, outcome, repo, number, fork=False):
             return 'Бинарная версия ' + value['sha256'][:12]
         text = value if isinstance(value, str) else json.dumps(value, ensure_ascii=False)
         return esc(text[:500])
+    if proposed_changes is not None:
+        parts.append('<h3>Изменения автора PR</h3><p>Сравнение с общей исходной версией веток. Это предложения автора, включая спорные поля; выбор ours/theirs к этому списку не применяется. Окончательный результат определяется после разрешения конфликтов.</p>')
+        for heading, key in [('Добавленные компоненты', 'added'), ('Удалённые компоненты', 'deleted'), ('Изменённые поля', 'modified')]:
+            records = proposed_changes.get(key, [])
+            if not records:
+                continue
+            parts.append(f'<h4>{heading}: {len(records)}</h4><table><tr><th>Лист</th><th>Компонент</th><th>Строка</th><th>Поле</th><th>Было в общей версии</th><th>Стало в PR</th></tr>')
+            for c in records[:200]:
+                parts.append('<tr>' + ''.join('<td>' + display(c.get(k, '')) + '</td>' for k in ('sheet', 'part', 'row', 'field', 'before', 'after')) + '</tr>')
+            parts.append('</table>')
+            if len(records) > 200:
+                parts.append('<p>Показаны первые 200 записей. Полный список — в pr-changes.json в Artifacts.</p>')
+        if not any(proposed_changes.get(k) for k in ('added', 'deleted', 'modified')):
+            parts.append('<p>Автор не изменял значения и формулы компонентов.</p>')
+    elif proposed.get('message'):
+        parts.append('<h3>Изменения автора PR</h3><p>Не удалось составить достоверный список: ' + esc(proposed['message']) + '</p>')
     for heading, records in [('Нерешённые конфликты', unresolved),
                              ('Разрешённые конфликты', [c for c in conflicts if c.get('choice') is not None])]:
         if not records:
@@ -77,7 +100,7 @@ def render(directory, outcome, repo, number, fork=False):
         parts.append('</table>')
     changes = report.get('changes')
     if outcome == 'success' and changes is not None:
-        parts.append('<h3>Изменения в книге</h3><p>Относительно целевой ветки PR. Учитываются значения и формулы; оформление не входит в этот список.</p>')
+        parts.append('<h3>Итог слияния: изменения в книге</h3><p>Относительно целевой ветки PR. Учитываются значения и формулы; оформление не входит в этот список.</p>')
         added, deleted, modified = (changes.get(k, []) for k in ('added', 'deleted', 'modified'))
         components = {(c['sheet'], str(c['part'])) for c in modified}
         parts.append(f'<p>Добавлено компонентов: {len(added)}. Удалено: {len(deleted)}. Изменено: {len(components)} (полей: {len(modified)}).</p>')
@@ -131,6 +154,7 @@ if __name__ == '__main__':
     Path('xlsm-artifacts/summary.html').write_text(output, encoding='utf-8')
     with open(os.environ['GITHUB_STEP_SUMMARY'], 'a', encoding='utf-8') as stream:
         stream.write(output)
+
 
 
 
