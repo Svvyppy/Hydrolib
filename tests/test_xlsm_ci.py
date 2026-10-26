@@ -161,6 +161,25 @@ class PipelineTests(unittest.TestCase):
                 self.invoke(apply=True, side='ours')
         self.assertFalse(self.git('--git-dir', str(self.remote), 'for-each-ref', '--format=%(refname)', 'refs/heads/xlsm-resolved/'))
 
+    def test_invalid_component_blocks_apply_before_push(self):
+        self.git('switch', 'feature')
+        w = openpyxl.load_workbook(self.book)
+        w.active.append([None, 'new invalid component'])
+        w.save(self.book)
+        w.close()
+        self.git('add', '.')
+        self.git('commit', '-m', 'invalid component')
+        self.head_sha = self.git('rev-parse', 'HEAD')
+        self.pr['head']['sha'] = self.head_sha
+        self.git('push', 'origin', 'feature')
+        with self.assertRaisesRegex(ValueError, 'Проверка компонентов'):
+            self.invoke(apply=True, side='ours')
+        self.assertEqual(self.git('--git-dir', str(self.remote), 'rev-parse', 'feature'), self.head_sha)
+        report = json.loads((self.artifacts / 'validation.json').read_text())
+        self.assertEqual(report['errors'], 1)
+        self.assertEqual(report['issues'][0]['cell'], 'A3')
+        self.assertFalse((self.artifacts / 'result.json').exists())
+
     def test_unresolved_apply_does_not_push(self):
         with self.assertRaisesRegex(ValueError, 'unresolved'):
             self.invoke(apply=True)
@@ -173,3 +192,4 @@ class PipelineTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
