@@ -121,21 +121,37 @@ def render(directory, outcome, repo, number, fork=False):
     if validation is not None:
         parts.append(f"<h3>Проверка компонентов</h3><p>Ошибок: {validation['errors']} · Предупреждений: {validation['warnings']}. Проверена версия: {esc(validation['phase'])}.</p>")
         issues = validation.get('issues', [])
-        if issues:
+        current = [i for i in issues if not i.get('existing') or i['severity'] == 'error']
+        existing = [i for i in issues if i.get('existing') and i['severity'] != 'error']
+        def issue_table(records):
             parts.append('<table><tr><th>Уровень</th><th>Лист</th><th>Компонент</th><th>Ячейка</th><th>Причина</th></tr>')
-            for issue in issues[:200]:
+            for issue in records[:200]:
                 level = 'Ошибка' if issue['severity'] == 'error' else 'Предупреждение'
-                reason = issue['message'] + (' Уже есть в целевой ветке.' if issue['existing'] else '')
-                parts.append('<tr>' + ''.join('<td>' + esc(v) + '</td>' for v in (level, issue['sheet'], issue['part'], issue['cell'], reason)) + '</tr>')
-            parts.append('</table><p>Полный список — в validation.json в Artifacts. Исправьте ошибки и отправьте новый коммит. Выбор ours/theirs не исправляет ошибки компонентов.</p>')
+                parts.append('<tr>' + ''.join('<td>' + esc(v) + '</td>' for v in (level, issue['sheet'], issue['part'], issue['cell'], issue['message'])) + '</tr>')
+            parts.append('</table>')
+            if len(records) > 200:
+                parts.append('<p>Показаны первые 200 записей раздела.</p>')
+        if current:
+            parts.append('<h4>Требуют внимания в этой проверке</h4>')
+            issue_table(sorted(current, key=lambda i: i['severity'] != 'error'))
+        elif issues:
+            parts.append('<p>Новых замечаний нет.</p>')
         else:
             parts.append('<p>Ошибок компонентов не найдено.</p>')
+        if existing:
+            parts.append(f'<details><summary>Замечания целевой ветки: {len(existing)} — не блокируют слияние</summary><p>Эти замечания уже присутствуют в целевой ветке и не добавлены автором PR.</p>')
+            issue_table(existing)
+            parts.append('</details>')
+        if issues:
+            parts.append('<p>Полный список — в validation.json в Artifacts.</p>')
+        if validation['errors']:
+            parts.append('<p>Исправьте ошибки и отправьте новый коммит. Выбор ours/theirs не обходит проверку компонентов.</p>')
     if conflicts:
         run_id = os.environ.get('GITHUB_RUN_ID', '')
         artifacts_url = f'https://github.com/{repo}/actions/runs/{run_id}#artifacts' if run_id else url + 'xlsm-check.yml'
         parts.append('<h3>Индивидуальный выбор сторон</h3><p>Скачайте артефакт этого запуска и откройте <b>resolve-conflicts.html</b> в браузере. Выберите ours/theirs для каждого конфликта и нажмите «Скопировать решения». Затем в workflow объединения выберите <b>manual</b> и вставьте текст в <b>resolutions_json</b>. Редактировать JSON вручную не нужно.</p>')
         parts.append(f'<p><a href="{esc(artifacts_url)}">Открыть артефакты запуска</a>. Решения привязаны к этим версиям книг; после изменения PR нужен новый отчёт.</p>')
-    if outcome != 'success' and not unresolved:
+    if outcome != 'success' and not unresolved and not (validation and validation['errors']):
         parts.append('<h3>Что мешает завершить слияние</h3><p>' + esc(message) + '</p>')
     parts.append('<h3>Что делать дальше</h3>')
     if result.get('mode') == 'fork_result':
