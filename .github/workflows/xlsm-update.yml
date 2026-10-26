@@ -39,12 +39,20 @@ jobs:
           python-version: '3.12'
       - run: pip install -r tools/xlsm_merge/requirements.txt
       - run: python -m unittest discover -s tests -p 'test_xlsm*.py'
-      - run: python tools/xlsm_merge/ci.py --apply
+      - id: merge
+        name: Проверить и объединить данные XLSM
+        run: python tools/xlsm_merge/ci.py --apply
         env:
           PR_NUMBER: ${{ inputs.pr_number }}
           GH_TOKEN: ${{ github.token }}
           CONFLICT_SIDE: ${{ inputs.conflict_side }}
           RESOLUTIONS_JSON: ${{ inputs.resolutions_json }}
+      - name: Показать результат и дальнейшие действия
+        if: always()
+        run: python tools/xlsm_merge/summary.py
+        env:
+          MERGE_OUTCOME: ${{ steps.merge.outcome }}
+          PR_NUMBER: ${{ github.event.pull_request.number || inputs.pr_number }}
       - uses: actions/upload-artifact@v4
         if: always()
         with:
