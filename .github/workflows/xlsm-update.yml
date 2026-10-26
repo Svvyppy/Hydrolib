@@ -6,6 +6,10 @@ on:
         description: 'Open PR number (branch must belong to this repository)'
         required: true
         type: string
+      resolutions_json:
+        description: 'Optional: paste full report.json with each choice set to ours or theirs'
+        required: false
+        type: string
 permissions:
   contents: write
   pull-requests: read
@@ -25,11 +29,12 @@ jobs:
         with:
           python-version: '3.12'
       - run: pip install -r tools/xlsm_merge/requirements.txt
-      - run: python -m unittest discover -s tests -p 'test_xlsm_merge.py'
+      - run: python -m unittest discover -s tests -p 'test_xlsm*.py'
       - run: python tools/xlsm_merge/ci.py --apply
         env:
           PR_NUMBER: ${{ inputs.pr_number }}
           GH_TOKEN: ${{ github.token }}
+          RESOLUTIONS_JSON: ${{ inputs.resolutions_json }}
       - uses: actions/upload-artifact@v4
         if: always()
         with:

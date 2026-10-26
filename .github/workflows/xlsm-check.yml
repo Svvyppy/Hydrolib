@@ -18,7 +18,7 @@ jobs:
         with:
           python-version: '3.12'
       - run: pip install -r tools/xlsm_merge/requirements.txt
-      - run: python -m unittest discover -s tests -p 'test_xlsm_merge.py'
+      - run: python -m unittest discover -s tests -p 'test_xlsm*.py'
       - run: python tools/xlsm_merge/ci.py
         env:
           PR_NUMBER: ${{ github.event.pull_request.number }}

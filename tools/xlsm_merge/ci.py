@@ -13,8 +13,8 @@ ARTIFACTS = ROOT / 'xlsm-artifacts'
 ARTIFACTS.mkdir(exist_ok=True)
 
 
-def git(*args, cwd=ROOT, **kwargs):
-    return subprocess.run(['git', *args], cwd=cwd, check=True, **kwargs)
+def git(*args, cwd=None, **kwargs):
+    return subprocess.run(['git', *args], cwd=cwd or ROOT, check=True, **kwargs)
 
 
 def main():
@@ -37,18 +37,30 @@ def main():
     head_sha = pr['head']['sha']
     ancestor = git('merge-base', base_sha, head_sha, capture_output=True, text=True).stdout.strip()
     with tempfile.TemporaryDirectory() as temp:
+        resolution_path = None
+        resolution_json = os.environ.get('RESOLUTIONS_JSON', '').strip()
+        if resolution_json:
+            if len(resolution_json.encode()) > 1_000_000:
+                raise ValueError('Resolution JSON is too large')
+            json.loads(resolution_json)  # Data only; never executed as code.
+            resolution_path = Path(temp) / 'resolutions.json'
+            resolution_path.write_text(resolution_json, encoding='utf-8')
         paths = []
-        for label, sha in [('ancestor', ancestor), ('head', head_sha), ('base', base_sha)]:
-            p = Path(temp) / (label + '.xlsm')
+        for label, sha in [('ancestor', ancestor), ('ours', head_sha), ('theirs', base_sha)]:
+            p = ARTIFACTS / (label + '.xlsm')
             p.write_bytes(git('show', f'{sha}:{WORKBOOK}', capture_output=True).stdout)
             paths.append(str(p))
         command = [sys.executable, str(ROOT / 'tools/xlsm_merge/merge.py'), *paths,
                    str(ARTIFACTS / 'Hydrolib_bd.xlsm'), '--report', str(ARTIFACTS / 'report.json')]
+        if resolution_path:
+            command += ['--resolutions', str(resolution_path)]
         subprocess.run(command, check=True)
         if apply:
             # Use the trusted driver's absolute path, even if the PR edits tools/.
             subprocess.run([sys.executable, str(ROOT / 'tools/xlsm_merge/install.py')], cwd=ROOT, check=True)
             driver = git('config', '--get', 'merge.hydrolib-xlsm.driver', capture_output=True, text=True).stdout.strip()
+            if resolution_path:
+                driver += ' --resolutions "' + str(resolution_path) + '"'
             git('config', 'merge.hydrolib-xlsm.driver', driver + ' --report "' + str(ARTIFACTS / 'git-report.json') + '"')
             info = Path(git('rev-parse', '--git-path', 'info/attributes', capture_output=True, text=True).stdout.strip())
             if not info.is_absolute():

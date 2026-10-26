@@ -4,6 +4,8 @@ Read formulas with openpyxl; write original ZIP parts with lxml, never save via
 openpyxl (that would discard XML maps). Unsupported changes fail closed.
 """
 import argparse
+import hashlib
+from datetime import date, datetime, time
 from copy import deepcopy
 from io import BytesIO
 import json
@@ -35,6 +37,76 @@ def choose(base, ours, theirs, location):
     if ours == base:
         return theirs
     raise Conflict(f'{location}: conflicting changes; base={base!r}; ours={ours!r}; theirs={theirs!r}')
+
+
+
+def readable(value):
+    """JSON representation without unstable object reprs or executable payloads."""
+    if value is MISSING:
+        return {'missing': True}
+    if isinstance(value, (datetime, date, time)):
+        return {'type': type(value).__name__, 'value': value.isoformat()}
+    if isinstance(value, bytes):
+        return {'sha256': hashlib.sha256(value).hexdigest()}
+    if isinstance(value, dict):
+        return {str(k): readable(v) for k, v in value.items()}
+    if isinstance(value, (tuple, list)):
+        return [readable(v) for v in value]
+    return value
+
+
+class Resolver:
+    """Collect all data conflicts and apply choices bound to exact input bytes."""
+    def __init__(self, paths, document=None):
+        self.inputs = {name: hashlib.sha256(Path(path).read_bytes()).hexdigest()
+                       for name, path in zip(('base', 'ours', 'theirs'), paths)}
+        self.choices = {}
+        self.conflicts = []
+        self.seen = set()
+        if document is not None:
+            if document.get('version') != 1 or document.get('inputs') != self.inputs:
+                raise Conflict('Resolution file is stale: regenerate it for these three workbook versions')
+            records = document.get('conflicts')
+            if not isinstance(records, list):
+                raise Conflict('Resolution file must contain a conflicts array')
+            for record in records:
+                identity, choice = record.get('id'), record.get('choice')
+                if not isinstance(identity, str) or identity in self.choices:
+                    raise Conflict('Invalid or duplicate conflict id')
+                if choice not in (None, 'ours', 'theirs'):
+                    raise Conflict(f'{identity}: choice must be ours, theirs or null')
+                self.choices[identity] = choice
+
+    def choose(self, base, ours, theirs, context, display=None):
+        try:
+            return choose(base, ours, theirs, str(context))
+        except Conflict:
+            pass
+        identity = hashlib.sha256(json.dumps(context, ensure_ascii=False,
+                                             sort_keys=True).encode()).hexdigest()[:24]
+        self.seen.add(identity)
+        choice = self.choices.get(identity)
+        values = display if display is not None else (base, ours, theirs)
+        self.conflicts.append({'id': identity, **context,
+                               **dict(zip(('base', 'ours', 'theirs'), map(readable, values))),
+                               'choice': choice})
+        # Temporary fallback is only for discovery. No workbook is written until
+        # every conflict has an explicit choice and all safety checks pass.
+        return theirs if choice == 'theirs' else ours
+
+    def finish(self):
+        if set(self.choices) - self.seen:
+            raise Conflict('Resolution file contains unknown conflict ids')
+        unresolved = sum(c['choice'] is None for c in self.conflicts)
+        if unresolved:
+            raise Conflict(f'{unresolved} unresolved conflict(s); set each choice to ours or theirs')
+
+    def report(self, status, message=None):
+        result = {'version': 1, 'status': status, 'inputs': self.inputs,
+                  'conflicts': self.conflicts}
+        if message:
+            result['message'] = message
+        return result
 
 
 def formula(value, origin, target):
@@ -144,7 +216,8 @@ def xml(data):
     return ET.tostring(data, xml_declaration=True, encoding='UTF-8', standalone=True)
 
 
-def merge(base_path, ours_path, theirs_path, output):
+def merge(base_path, ours_path, theirs_path, output, resolver=None):
+    resolver = resolver or Resolver((base_path, ours_path, theirs_path))
     books = [Book(p) for p in (base_path, ours_path, theirs_path)]
     base, ours, theirs = books
     if not (base.sheets == ours.sheets == theirs.sheets):
@@ -156,7 +229,7 @@ def merge(base_path, ours_path, theirs_path, output):
     tables = {n for b in books for n in b.parts if n.startswith('xl/tables/') and n.endswith('.xml')}
     handled |= tables
     # Preserve all package features. Never silently discard a macro or XML map.
-    for name in set().union(*(b.parts for b in books)) - handled:
+    for name in sorted(set().union(*(b.parts for b in books)) - handled):
         values = [b.parts.get(name, MISSING) for b in books]
         if name == 'xl/styles.xml' and not (values[0] == values[1] == values[2]):
             raise Conflict('Styles changed: style-ID reconciliation is not supported')
@@ -209,12 +282,15 @@ def merge(base_path, ours_path, theirs_path, output):
         for key in order:
             records = [m.get(key) for m in maps]
             signatures = [r[2] if r else MISSING for r in records]
-            if any(r is None for r in records):
-                merged = choose(*signatures, f'{name}/{key[1]} (add/delete)')
+            context = {'sheet': name, 'record_type': key[0], 'part': key[1]}
+            # A delete/edit conflict selects the whole record. After selection,
+            # exclude other versions so cell merging cannot resurrect old fields.
+            if any(r is None for r in records) or key[0] in {'fixed', 'unkeyed'}:
+                merged = resolver.choose(*signatures, {**context, 'kind': 'record'})
                 if merged is MISSING:
                     continue
-            if key[0] in {'fixed', 'unkeyed'}:
-                merged = choose(*signatures, f'{name}/{key} (unkeyed row)')
+                selected = next(i for i in (1, 2, 0) if signatures[i] == merged)
+                records = [r if i == selected else None for i, r in enumerate(records)]
             # Keep existing gaps to preserve static anchors; imported rows append.
             dest = max(last + 1, records[1][0] if records[1] else last + 1)
             if key[0] != 'part' and any(r and r[0] != dest for r in records):
@@ -225,7 +301,7 @@ def merge(base_path, ours_path, theirs_path, output):
                 if attr is not MISSING:
                     attr.pop('r', None)
                     attr.pop('spans', None)
-            selected_attrs = choose(*attributes, f'{name}/{key[1]} row formatting')
+            selected_attrs = resolver.choose(*attributes, {**context, 'kind': 'row_format'})
             row = deepcopy(records[source][1])
             row.attrib.clear()
             row.attrib.update(selected_attrs)
@@ -236,7 +312,10 @@ def merge(base_path, ours_path, theirs_path, output):
             columns = sorted(set().union(*(r[2] for r in records if r)))
             for col in columns:
                 vals = [r[2].get(col, MISSING) if r else MISSING for r in records]
-                value = choose(*vals, f'{name}/{key[1]}/{get_column_letter(col)}')
+                display = [books[i].wb[name].cell(r[0], col).value if r and col in r[2] else MISSING
+                           for i, r in enumerate(records)]
+                value = resolver.choose(*vals, {**context, 'kind': 'cell',
+                    'column': get_column_letter(col), 'field': ours.wb[name].cell(1, col).value}, display)
                 if value is MISSING:
                     continue
                 i = next(i for i in (1, 2, 0) if vals[i] == value)
@@ -250,7 +329,7 @@ def merge(base_path, ours_path, theirs_path, output):
         lengths[name] = last
         result[path] = xml(root)
     # Table IDs, columns, XML-map bindings must stay unchanged. Only resize ranges.
-    for path in tables:
+    for path in sorted(tables):
         roots = [ET.fromstring(b.parts[path]) for b in books]
         def table_signature(r):
             r = deepcopy(r)
@@ -287,6 +366,7 @@ def merge(base_path, ours_path, theirs_path, output):
     calc.set('fullCalcOnLoad', '1')
     calc.set('forceFullCalc', '1')
     result['xl/workbook.xml'] = xml(workbook)
+    resolver.finish()
     buf = BytesIO()
     with zipfile.ZipFile(buf, 'w', zipfile.ZIP_DEFLATED) as z:
         for name, value in result.items():
@@ -315,15 +395,19 @@ def main():
     for arg in ('base', 'ours', 'theirs', 'output'):
         parser.add_argument(arg)
     parser.add_argument('--report', default='xlsm-merge-report.json')
+    parser.add_argument('--resolutions', help='JSON report with choice=ours/theirs for each conflict')
     args = parser.parse_args()
+    resolver = None
     try:
-        merge(args.base, args.ours, args.theirs, args.output)
+        document = json.loads(Path(args.resolutions).read_text(encoding='utf-8')) if args.resolutions else None
+        resolver = Resolver((args.base, args.ours, args.theirs), document)
+        merge(args.base, args.ours, args.theirs, args.output, resolver=resolver)
     except Exception as error:
-        report = {'status': 'conflict', 'message': str(error)}
+        report = resolver.report('conflict', str(error)) if resolver else {'status': 'error', 'message': str(error)}
         Path(args.report).write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding='utf-8')
         print(report['message'], file=sys.stderr)
         return 1
-    Path(args.report).write_text(json.dumps({'status': 'merged'}), encoding='utf-8')
+    Path(args.report).write_text(json.dumps(resolver.report('merged'), ensure_ascii=False, indent=2), encoding='utf-8')
     return 0
 
 
