@@ -60,3 +60,15 @@ class SummaryTests(unittest.TestCase):
             self.assertIn('Изменений значений и формул нет', render(d, 'success', 'a/b', '1'))
             p.write_text(json.dumps({'changes': {'added': [{'sheet': 'X', 'part': str(i), 'row': i+2} for i in range(201)]}}))
             self.assertIn('первые 200 записей', render(d, 'success', 'a/b', '1'))
+
+
+    def test_version_run_and_compact_counts(self):
+        from unittest.mock import patch
+        with tempfile.TemporaryDirectory() as d, patch.dict('os.environ', {
+                'GITHUB_SHA': 'abcdef123456789', 'GITHUB_RUN_ID': '123', 'GITHUB_RUN_ATTEMPT': '2'}):
+            Path(d, 'report.json').write_text(json.dumps({'changes': {'added': [{'sheet': 'X', 'part': 'NEW', 'row': 2}]}}))
+            text = render(d, 'success', 'a/b', '13')
+            self.assertIn('Добавлено 1 · Изменено 0 · Удалено 0 · Конфликтов 0', text)
+            self.assertIn('abcdef123456', text)
+            self.assertIn('/actions/runs/123/attempts/2', text)
+            self.assertIn('Re-run использует прежнюю', text)

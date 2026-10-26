@@ -12,7 +12,7 @@ on:
     types: [opened, synchronize, reopened, ready_for_review, edited]
 permissions:
   contents: read
-  pull-requests: read
+  pull-requests: write
 concurrency:
   group: xlsm-check-${{ github.event.pull_request.number || inputs.pr_number }}
   cancel-in-progress: true
@@ -44,8 +44,16 @@ jobs:
         env:
           MERGE_OUTCOME: ${{ steps.merge.outcome }}
           PR_NUMBER: ${{ github.event.pull_request.number || inputs.pr_number }}
+      - name: Обновить отчёт в PR
+        if: always()
+        continue-on-error: true
+        run: python tools/xlsm_merge/pr_comment.py
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number || inputs.pr_number }}
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: xlsm-merge-report
           path: xlsm-artifacts/
+

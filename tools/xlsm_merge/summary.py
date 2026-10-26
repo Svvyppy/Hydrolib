@@ -2,6 +2,7 @@
 import html
 import json
 import os
+from datetime import datetime, timezone
 from pathlib import Path
 
 
@@ -32,6 +33,21 @@ def render(directory, outcome, repo, number, fork=False):
     if outcome == 'success' and result:
         message = 'Объединение подготовлено. Перед использованием пересчитайте книгу в Excel и проверьте diff результата.'
     parts = [f'<h2>{title}</h2><p>{esc(message)}</p>', f'<p>PR: <a href="https://github.com/{esc(repo)}/pull/{esc(number)}">#{esc(number)}</a>. Наше (ours) — ветка PR; их (theirs) — целевая ветка.</p>']
+    changes = report.get('changes')
+    if outcome == 'success' and changes is not None:
+        modified = changes.get('modified', [])
+        count = len({(c['sheet'], str(c['part'])) for c in modified})
+        parts.insert(1, f"<p><strong>Добавлено {len(changes.get('added', []))} · Изменено {count} · Удалено {len(changes.get('deleted', []))} · Конфликтов {len(unresolved)}</strong></p>")
+    else:
+        parts.insert(1, f'<p><strong>Нерешённых конфликтов: {len(unresolved)}. Итог изменений пока не рассчитан.</strong></p>')
+    sha = os.environ.get('GITHUB_SHA', '')
+    run = os.environ.get('GITHUB_RUN_ID', '')
+    attempt = os.environ.get('GITHUB_RUN_ATTEMPT', '1')
+    checked = datetime.now(timezone.utc).isoformat(timespec='seconds')
+    if sha:
+        parts.append(f'<p>Версия проверяющего кода: <a href="https://github.com/{esc(repo)}/commit/{esc(sha)}">{esc(sha[:12])}</a>. Проверено: {esc(checked)} (UTC).</p>')
+    if run:
+        parts.append(f'<p><a href="https://github.com/{esc(repo)}/actions/runs/{esc(run)}/attempts/{esc(attempt)}">Открыть запуск проверки, попытка {esc(attempt)}</a>. Re-run использует прежнюю версию кода; для обновлённой версии выберите Run workflow.</p>')
     def display(value):
         if value == {'missing': True}:
             return 'Удалено / отсутствует'
@@ -94,7 +110,10 @@ if __name__ == '__main__':
     output = render('xlsm-artifacts', os.environ.get('MERGE_OUTCOME', 'failure'),
                     os.environ['GITHUB_REPOSITORY'], os.environ.get('PR_NUMBER', ''),
                     os.environ.get('IS_FORK') == 'true')
+    Path('xlsm-artifacts').mkdir(exist_ok=True)
+    Path('xlsm-artifacts/summary.html').write_text(output, encoding='utf-8')
     with open(os.environ['GITHUB_STEP_SUMMARY'], 'a', encoding='utf-8') as stream:
         stream.write(output)
+
 
 
