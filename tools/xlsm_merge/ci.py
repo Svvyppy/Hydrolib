@@ -52,6 +52,19 @@ def write_pr_changes(ancestor, head, output):
     Path(output).write_text(json.dumps(document, ensure_ascii=False, indent=2), encoding='utf-8')
 
 
+def tracked_files(sha, cwd=None):
+    entries = git('ls-tree', '-r', '-z', sha, cwd=cwd, capture_output=True).stdout
+    # Regular tracked blobs only: no directories, submodules or symlink targets.
+    result = set()
+    for entry in entries.split(b'\0'):
+        if not entry:
+            continue
+        meta, path = entry.split(b'\t', 1)
+        if meta.split()[0] in (b'100644', b'100755'):
+            result.add(path.decode('utf-8'))
+    return result
+
+
 def main():
     number = os.environ['PR_NUMBER']
     if not number.isdecimal():
@@ -89,7 +102,9 @@ def main():
             p.write_bytes(git('show', f'{sha}:{WORKBOOK}', capture_output=True).stdout)
             paths.append(str(p))
         write_pr_changes(paths[0], paths[1], ARTIFACTS / 'pr-changes.json')
-        require_valid(paths[1], paths[2], ARTIFACTS / 'validation.json', 'PR')
+        ancestor_files, head_files, base_files = (tracked_files(sha) for sha in (ancestor, head_sha, base_sha))
+        merged_files = (head_files | base_files) - ((ancestor_files - head_files) | (ancestor_files - base_files))
+        require_valid(paths[1], paths[2], ARTIFACTS / 'validation.json', 'PR', head_files, base_files)
         command = [sys.executable, str(ROOT / 'tools/xlsm_merge/merge.py'), *paths,
                    str(ARTIFACTS / 'Hydrolib_bd.xlsm'), '--conflict-side', conflict_side, '--report', str(ARTIFACTS / 'report.json')]
         if resolution_path:
@@ -100,7 +115,7 @@ def main():
             report = json.loads(report_path.read_text(encoding='utf-8')) if report_path.exists() else {}
             message = report.get('message', 'Workbook merge failed; see report artifact')
             raise ValueError(message)
-        require_valid(ARTIFACTS / 'Hydrolib_bd.xlsm', paths[2], ARTIFACTS / 'validation.json', 'result')
+        require_valid(ARTIFACTS / 'Hydrolib_bd.xlsm', paths[2], ARTIFACTS / 'validation.json', 'result', merged_files, base_files)
         if apply:
             # Use the trusted driver's absolute path, even if the PR edits tools/.
             subprocess.run([sys.executable, str(ROOT / 'tools/xlsm_merge/install.py')], cwd=ROOT, check=True)
@@ -120,6 +135,8 @@ def main():
                 git('config', 'user.name', 'github-actions[bot]')
                 git('config', 'user.email', '41898282+github-actions[bot]@users.noreply.github.com')
                 git('merge', '--no-edit', base_sha, cwd=worktree)
+                require_valid(worktree / WORKBOOK, paths[2], ARTIFACTS / 'validation.json',
+                              'published result', tracked_files('HEAD', cwd=worktree), base_files)
                 if fork:
                     publish(git, api, repo, number, pr, worktree, WORKBOOK, conflict_side,
                             json.loads(resolution_json) if resolution_json else None, ARTIFACTS)
@@ -141,5 +158,6 @@ if __name__ == '__main__':
         (ARTIFACTS / 'failure.txt').write_text(str(error), encoding='utf-8')
         print(error, file=sys.stderr)
         sys.exit(1)
+
 
 
