@@ -16,7 +16,7 @@ on:
           - theirs
           - manual
       resolutions_json:
-        description: 'Дополнительно: JSON с индивидуальными решениями; обычно оставьте пустым'
+        description: 'Для manual: вставьте текст кнопки «Скопировать решения» из resolve-conflicts.html'
         required: false
         type: string
 permissions:
@@ -65,4 +65,5 @@ jobs:
         with:
           name: xlsm-merge-result
           path: xlsm-artifacts/
+
 
