@@ -288,9 +288,11 @@ def merge(base_path, ours_path, theirs_path, output, resolver=None):
             for v in values:
                 r = ET.fromstring(v)
                 for child in list(r):
-                    if child.tag in {Q('calcPr'), Q('bookViews')}:
+                    if child.tag in {Q('calcPr'), Q('bookViews'), Q('fileVersion'),
+                                     '{http://schemas.microsoft.com/office/spreadsheetml/2014/revision}revisionPtr'}:
                         r.remove(child)
-                normalized.append(ET.tostring(r, method='c14n'))
+                r.attrib.pop('{http://schemas.openxmlformats.org/markup-compatibility/2006}Ignorable', None)
+                normalized.append(style_signature(r))
             if len(set(normalized)) != 1:
                 raise Conflict('Workbook structure changed')
             continue
