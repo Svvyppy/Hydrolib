@@ -38,3 +38,25 @@ class SummaryTests(unittest.TestCase):
             text = render(d, 'failure', 'a/b', '1')
             self.assertIn('Что мешает завершить слияние', text)
             self.assertIn('Column schema changed', text)
+
+
+    def test_changes_are_visible_and_escaped(self):
+        with tempfile.TemporaryDirectory() as d:
+            Path(d, 'report.json').write_text(json.dumps({'changes': {
+                'added': [{'sheet': 'Chips', 'part': '<NEW>', 'row': 3}],
+                'deleted': [{'sheet': 'Chips', 'part': 'OLD', 'row': 2}],
+                'modified': [{'sheet': 'Chips', 'part': 'A', 'row': 4, 'field': 'Value', 'before': 10, 'after': 20}]}}))
+            text = render(d, 'success', 'a/b', '1')
+            self.assertIn('Добавлено компонентов: 1', text)
+            self.assertIn('Изменено: 1 (полей: 1)', text)
+            self.assertIn('&lt;NEW&gt;', text)
+            self.assertIn('<td>10</td><td>20</td>', text)
+            self.assertNotIn('Добавленные компоненты', render(d, 'failure', 'a/b', '1'))
+
+    def test_change_limit_and_empty(self):
+        with tempfile.TemporaryDirectory() as d:
+            p = Path(d, 'report.json')
+            p.write_text(json.dumps({'changes': {'added': [], 'deleted': [], 'modified': []}}))
+            self.assertIn('Изменений значений и формул нет', render(d, 'success', 'a/b', '1'))
+            p.write_text(json.dumps({'changes': {'added': [{'sheet': 'X', 'part': str(i), 'row': i+2} for i in range(201)]}}))
+            self.assertIn('первые 200 записей', render(d, 'success', 'a/b', '1'))

@@ -54,6 +54,25 @@ def render(directory, outcome, repo, number, fork=False):
                 place += ' / Запись целиком (добавление, изменение или удаление)'
             parts.append(f'<tr><td>{esc(place)}</td><td>{display(c.get("base"))}</td><td>{display(c.get("ours"))}</td><td>{display(c.get("theirs"))}</td><td>{esc(c.get("choice") or "Не выбрано")}</td></tr>')
         parts.append('</table>')
+    changes = report.get('changes')
+    if outcome == 'success' and changes is not None:
+        parts.append('<h3>Изменения в книге</h3><p>Относительно целевой ветки PR. Учитываются значения и формулы; оформление не входит в этот список.</p>')
+        added, deleted, modified = (changes.get(k, []) for k in ('added', 'deleted', 'modified'))
+        components = {(c['sheet'], str(c['part'])) for c in modified}
+        parts.append(f'<p>Добавлено компонентов: {len(added)}. Удалено: {len(deleted)}. Изменено: {len(components)} (полей: {len(modified)}).</p>')
+        for heading, records in [('Добавленные компоненты', added), ('Удалённые компоненты', deleted), ('Изменённые поля', modified)]:
+            if not records:
+                continue
+            parts.append(f'<h4>{heading}</h4><table><tr><th>Лист</th><th>Компонент</th><th>Строка</th><th>Поле</th><th>Было</th><th>Стало</th></tr>')
+            for c in records[:200]:
+                parts.append('<tr>' + ''.join('<td>' + display(c.get(k, '')) + '</td>' for k in ('sheet', 'part', 'row', 'field', 'before', 'after')) + '</tr>')
+            parts.append('</table>')
+            if len(records) > 200:
+                parts.append('<p>Показаны первые 200 записей. Полный список — в report.json в Artifacts.</p>')
+        if not any((added, deleted, modified)):
+            parts.append('<p>Изменений значений и формул нет.</p>')
+    elif outcome != 'success':
+        parts.append('<p>Итоговый список изменений будет доступен после успешного объединения книги.</p>')
     if outcome != 'success' and not unresolved:
         parts.append('<h3>Что мешает завершить слияние</h3><p>' + esc(message) + '</p>')
     parts.append('<h3>Что делать дальше</h3>')
@@ -77,4 +96,5 @@ if __name__ == '__main__':
                     os.environ.get('IS_FORK') == 'true')
     with open(os.environ['GITHUB_STEP_SUMMARY'], 'a', encoding='utf-8') as stream:
         stream.write(output)
+
 
