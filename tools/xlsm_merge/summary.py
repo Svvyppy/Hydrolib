@@ -14,6 +14,8 @@ def render(directory, outcome, repo, number, fork=False):
         fork, number = context['fork'], context['number']
     report_path = directory / 'report.json'
     report = json.loads(report_path.read_text(encoding='utf-8')) if report_path.exists() else {}
+    validation_path = directory / 'validation.json'
+    validation = json.loads(validation_path.read_text(encoding='utf-8')) if validation_path.exists() else None
     conflicts = report.get('conflicts', [])
     unresolved = [c for c in conflicts if c.get('choice') is None]
     esc = lambda value: html.escape(str(value))
@@ -23,6 +25,9 @@ def render(directory, outcome, repo, number, fork=False):
     if outcome == 'success':
         title = '✅ Книгу удалось объединить'
         message = 'Проверка успешна. Автоматическая проверка не меняет ветки. Перед использованием результата откройте книгу в Excel, пересчитайте и сохраните.'
+    elif validation and validation['errors']:
+        title = '❌ Нужно исправить данные компонентов'
+        message = f"Найдено ошибок: {validation['errors']}. Слияние остановлено до записи в ветку. Подробности — в таблице проверки компонентов ниже."
     elif unresolved:
         title = '⚠️ Не удалось объединить книгу: нужен выбор стороны'
         message = f'Неразрешённых конфликтов: {len(unresolved)}. Это расхождения между версиями, а не ошибка запуска.'
@@ -89,6 +94,18 @@ def render(directory, outcome, repo, number, fork=False):
             parts.append('<p>Изменений значений и формул нет.</p>')
     elif outcome != 'success':
         parts.append('<p>Итоговый список изменений будет доступен после успешного объединения книги.</p>')
+    if validation is not None:
+        parts.append(f"<h3>Проверка компонентов</h3><p>Ошибок: {validation['errors']} · Предупреждений: {validation['warnings']}. Проверена версия: {esc(validation['phase'])}.</p>")
+        issues = validation.get('issues', [])
+        if issues:
+            parts.append('<table><tr><th>Уровень</th><th>Лист</th><th>Компонент</th><th>Ячейка</th><th>Причина</th></tr>')
+            for issue in issues[:200]:
+                level = 'Ошибка' if issue['severity'] == 'error' else 'Предупреждение'
+                reason = issue['message'] + (' Уже есть в целевой ветке.' if issue['existing'] else '')
+                parts.append('<tr>' + ''.join('<td>' + esc(v) + '</td>' for v in (level, issue['sheet'], issue['part'], issue['cell'], reason)) + '</tr>')
+            parts.append('</table><p>Полный список — в validation.json в Artifacts. Исправьте ошибки и отправьте новый коммит. Выбор ours/theirs не исправляет ошибки компонентов.</p>')
+        else:
+            parts.append('<p>Ошибок компонентов не найдено.</p>')
     if outcome != 'success' and not unresolved:
         parts.append('<h3>Что мешает завершить слияние</h3><p>' + esc(message) + '</p>')
     parts.append('<h3>Что делать дальше</h3>')
@@ -100,7 +117,7 @@ def render(directory, outcome, repo, number, fork=False):
         parts.append(f'<p>PR из форка. Откройте <a href="{url}xlsm-update.yml">Объединить XLSM</a> → Run workflow → номер PR {esc(number)} → ours/theirs. Результат будет в новой ветке и новом PR общего репозитория. Личный форк и исходный PR не изменятся.</p>')
     elif unresolved:
         parts.append(f'<p>Откройте <a href="{url}xlsm-update.yml">Объединить XLSM</a> → Run workflow → master → номер PR {esc(number)} → ours или theirs → Run workflow. Независимые изменения сохранятся. При расхождении VBA выбирается весь VBA-проект стороны.</p>')
-    elif outcome != 'success':
+    elif outcome != 'success' and not (validation and validation['errors']):
         parts.append('<p>Если причина — структура книги, шрифты или другие неподдерживаемые изменения, нужен ручной разбор. Выбор ours/theirs не обходит эти ограничения.</p>')
     parts.append(f'<p><a href="{url}xlsm-check.yml">Повторить проверку по номеру PR</a>. Подробности и исходные книги находятся в Artifacts этого запуска.</p>')
     return '\n'.join(parts)
@@ -114,6 +131,7 @@ if __name__ == '__main__':
     Path('xlsm-artifacts/summary.html').write_text(output, encoding='utf-8')
     with open(os.environ['GITHUB_STEP_SUMMARY'], 'a', encoding='utf-8') as stream:
         stream.write(output)
+
 
 
 
