@@ -57,7 +57,10 @@ def readable(value):
 
 class Resolver:
     """Collect all data conflicts and apply choices bound to exact input bytes."""
-    def __init__(self, paths, document=None):
+    def __init__(self, paths, document=None, conflict_side='manual'):
+        if conflict_side not in ('manual', 'ours', 'theirs'):
+            raise Conflict('Conflict side must be manual, ours or theirs')
+        self.conflict_side = None if conflict_side == 'manual' else conflict_side
         self.inputs = {name: hashlib.sha256(Path(path).read_bytes()).hexdigest()
                        for name, path in zip(('base', 'ours', 'theirs'), paths)}
         self.choices = {}
@@ -85,7 +88,7 @@ class Resolver:
         identity = hashlib.sha256(json.dumps(context, ensure_ascii=False,
                                              sort_keys=True).encode()).hexdigest()[:24]
         self.seen.add(identity)
-        choice = self.choices.get(identity)
+        choice = self.choices.get(identity, self.conflict_side)
         values = display if display is not None else (base, ours, theirs)
         self.conflicts.append({'id': identity, **context,
                                **dict(zip(('base', 'ours', 'theirs'), map(readable, values))),
@@ -103,7 +106,7 @@ class Resolver:
 
     def report(self, status, message=None):
         result = {'version': 1, 'status': status, 'inputs': self.inputs,
-                  'conflicts': self.conflicts}
+                  'conflicts': self.conflicts, 'conflict_side': self.conflict_side or 'manual'}
         if message:
             result['message'] = message
         return result
@@ -395,12 +398,14 @@ def main():
     for arg in ('base', 'ours', 'theirs', 'output'):
         parser.add_argument(arg)
     parser.add_argument('--report', default='xlsm-merge-report.json')
+    parser.add_argument('--conflict-side', choices=('manual', 'ours', 'theirs'), default='manual',
+                        help='Side for data conflicts only; explicit JSON choices take precedence')
     parser.add_argument('--resolutions', help='JSON report with choice=ours/theirs for each conflict')
     args = parser.parse_args()
     resolver = None
     try:
         document = json.loads(Path(args.resolutions).read_text(encoding='utf-8')) if args.resolutions else None
-        resolver = Resolver((args.base, args.ours, args.theirs), document)
+        resolver = Resolver((args.base, args.ours, args.theirs), document, args.conflict_side)
         merge(args.base, args.ours, args.theirs, args.output, resolver=resolver)
     except Exception as error:
         report = resolver.report('conflict', str(error)) if resolver else {'status': 'error', 'message': str(error)}

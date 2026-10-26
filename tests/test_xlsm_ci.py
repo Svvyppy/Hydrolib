@@ -82,9 +82,9 @@ class PipelineTests(unittest.TestCase):
         self.pr = {'state': 'open', 'base': {'sha': self.base_sha}, 'head': {
             'sha': self.head_sha, 'ref': 'feature', 'repo': {'full_name': 'test/library'}}}
 
-    def invoke(self, document=None, apply=False):
+    def invoke(self, document=None, apply=False, side='manual'):
         env = {'PR_NUMBER': '1', 'GITHUB_REPOSITORY': 'test/library', 'GH_TOKEN': 'test-token',
-               'RESOLUTIONS_JSON': json.dumps(document) if document else ''}
+               'RESOLUTIONS_JSON': json.dumps(document) if document else '', 'CONFLICT_SIDE': side}
         with patch.dict(os.environ, env), patch.object(sys, 'argv', ['ci.py'] + (['--apply'] if apply else [])), \
                 patch.object(self.ci.urllib.request, 'urlopen', return_value=BytesIO(json.dumps(self.pr).encode())):
             self.ci.main()
@@ -106,6 +106,17 @@ class PipelineTests(unittest.TestCase):
         self.assertEqual(s['D2'].value, 'theirs independent')
         parents = self.git('--git-dir', str(self.remote), 'log', '-1', '--format=%P', 'feature').split()
         self.assertEqual(parents, [self.head_sha, self.base_sha])
+
+    def test_dropdown_choice_applies_without_json(self):
+        self.invoke(apply=True, side='ours')
+        data = subprocess.run(['git', '--git-dir', str(self.remote), 'show', 'feature:Database/Hydrolib_bd.xlsm'],
+                              check=True, capture_output=True).stdout
+        s = openpyxl.load_workbook(BytesIO(data)).active
+        self.assertEqual(s['B2'].value, 20)
+        self.assertEqual(s['C2'].value, 'ours independent')
+        self.assertEqual(s['D2'].value, 'theirs independent')
+        report = json.loads((self.artifacts / 'report.json').read_text())
+        self.assertEqual(report['conflicts'][0]['choice'], 'ours')
 
     def test_unresolved_apply_does_not_push(self):
         with self.assertRaises(subprocess.CalledProcessError):

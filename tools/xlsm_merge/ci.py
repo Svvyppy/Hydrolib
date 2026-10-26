@@ -28,6 +28,9 @@ def main():
         pr = json.load(response)
     if pr['state'] != 'open':
         raise ValueError('PR must be open')
+    conflict_side = os.environ.get('CONFLICT_SIDE', 'manual')
+    if conflict_side not in ('manual', 'ours', 'theirs'):
+        raise ValueError('CONFLICT_SIDE must be manual, ours or theirs')
     apply = '--apply' in sys.argv
     if apply and pr['head']['repo']['full_name'] != repo:
         raise ValueError('Apply is supported only for branches in this repository; forks use local merge')
@@ -51,7 +54,7 @@ def main():
             p.write_bytes(git('show', f'{sha}:{WORKBOOK}', capture_output=True).stdout)
             paths.append(str(p))
         command = [sys.executable, str(ROOT / 'tools/xlsm_merge/merge.py'), *paths,
-                   str(ARTIFACTS / 'Hydrolib_bd.xlsm'), '--report', str(ARTIFACTS / 'report.json')]
+                   str(ARTIFACTS / 'Hydrolib_bd.xlsm'), '--conflict-side', conflict_side, '--report', str(ARTIFACTS / 'report.json')]
         if resolution_path:
             command += ['--resolutions', str(resolution_path)]
         subprocess.run(command, check=True)
@@ -59,6 +62,7 @@ def main():
             # Use the trusted driver's absolute path, even if the PR edits tools/.
             subprocess.run([sys.executable, str(ROOT / 'tools/xlsm_merge/install.py')], cwd=ROOT, check=True)
             driver = git('config', '--get', 'merge.hydrolib-xlsm.driver', capture_output=True, text=True).stdout.strip()
+            driver += ' --conflict-side ' + conflict_side
             if resolution_path:
                 driver += ' --resolutions "' + str(resolution_path) + '"'
             git('config', 'merge.hydrolib-xlsm.driver', driver + ' --report "' + str(ARTIFACTS / 'git-report.json') + '"')

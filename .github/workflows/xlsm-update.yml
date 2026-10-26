@@ -3,11 +3,20 @@ on:
   workflow_dispatch:
     inputs:
       pr_number:
-        description: 'Open PR number (branch must belong to this repository)'
+        description: 'Номер PR (ветка должна находиться в этом репозитории)'
         required: true
         type: string
+      conflict_side:
+        description: 'Сторона для спорных полей: ours = ветка PR, theirs = целевая ветка; manual = индивидуальный выбор'
+        required: true
+        type: choice
+        default: ours
+        options:
+          - ours
+          - theirs
+          - manual
       resolutions_json:
-        description: 'Optional: paste full report.json with each choice set to ours or theirs'
+        description: 'Дополнительно: JSON с индивидуальными решениями; обычно оставьте пустым'
         required: false
         type: string
 permissions:
@@ -34,6 +43,7 @@ jobs:
         env:
           PR_NUMBER: ${{ inputs.pr_number }}
           GH_TOKEN: ${{ github.token }}
+          CONFLICT_SIDE: ${{ inputs.conflict_side }}
           RESOLUTIONS_JSON: ${{ inputs.resolutions_json }}
       - uses: actions/upload-artifact@v4
         if: always()

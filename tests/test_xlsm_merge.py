@@ -209,6 +209,38 @@ class MergeTests(unittest.TestCase):
         self.assertEqual(openpyxl.load_workbook(self.output)['Parts']['B2'].value, 30)
         self.assertEqual(json.loads(report.read_text())['status'], 'merged')
 
+    def test_default_side_preserves_both_independent_changes(self):
+        self.ours = self.variant('ours', {'B2': 20, 'A3': 'B', 'B3': 9})
+        self.theirs = self.variant('theirs', {'B2': 30, 'C2': 'independent'})
+        for side, expected in [('ours', 20), ('theirs', 30)]:
+            resolver = Resolver((self.base, self.ours, self.theirs), conflict_side=side)
+            merge(self.base, self.ours, self.theirs, self.output, resolver)
+            s = openpyxl.load_workbook(self.output)['Parts']
+            self.assertEqual(s['B2'].value, expected)
+            self.assertEqual(s['C2'].value, 'independent')
+            self.assertEqual(s['A3'].value, 'B')
+            self.assertEqual(resolver.report('merged')['conflicts'][0]['choice'], side)
+
+    def test_explicit_choice_overrides_default_and_null_stays_unresolved(self):
+        self.ours = self.variant('ours', {'B2': 20})
+        self.theirs = self.variant('theirs', {'B2': 30})
+        doc = self.discover()
+        doc['conflicts'][0]['choice'] = 'theirs'
+        resolver = Resolver((self.base, self.ours, self.theirs), doc, conflict_side='ours')
+        merge(self.base, self.ours, self.theirs, self.output, resolver)
+        self.assertEqual(openpyxl.load_workbook(self.output)['Parts']['B2'].value, 30)
+        doc['conflicts'][0]['choice'] = None
+        resolver = Resolver((self.base, self.ours, self.theirs), doc, conflict_side='ours')
+        with self.assertRaises(Conflict):
+            merge(self.base, self.ours, self.theirs, self.output, resolver)
+
+    def test_default_side_cannot_override_schema_guard(self):
+        self.theirs = self.variant('theirs', {'B1': 'New schema'})
+        resolver = Resolver((self.base, self.ours, self.theirs), conflict_side='ours')
+        with self.assertRaisesRegex(Conflict, 'schema'):
+            merge(self.base, self.ours, self.theirs, self.output, resolver)
+        self.assertFalse(self.output.exists())
+
     def test_real_library_parallel_additions(self):
         self.base = Path(__file__).resolve().parents[1] / 'Database/Hydrolib_bd.xlsm'
         n = openpyxl.load_workbook(self.base)['Chips'].max_row + 1
