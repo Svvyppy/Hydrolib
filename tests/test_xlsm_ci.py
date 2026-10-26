@@ -45,7 +45,7 @@ class PipelineTests(unittest.TestCase):
         (self.seed / '.gitattributes').write_text('Database/Hydrolib_bd.xlsm merge=hydrolib-xlsm\n')
         w = openpyxl.Workbook()
         s = w.active
-        s.append(['Part Number', 'Value', 'Left', 'Right'])
+        s.append(['Part Number', 'Value', 'Left', 'Right', 'Library Path', 'Footprint Path 1'])
         s.append(['A', 10, 'base', 'base'])
         w.save(self.book)
         self.ancestor = self.book.read_bytes()
@@ -168,6 +168,41 @@ class PipelineTests(unittest.TestCase):
                 self.invoke(apply=True, side='ours')
         self.assertFalse(self.git('--git-dir', str(self.remote), 'for-each-ref', '--format=%(refname)', 'refs/heads/xlsm-resolved/'))
 
+    def prepare_library_refs(self, add_files):
+        self.git('switch', 'feature')
+        w = openpyxl.load_workbook(self.book)
+        w.active['E2'] = '=CONCATENATE("Schematic/",A2,".SchLib")'
+        w.active['F2'] = 'Footprints/A.PcbLib'
+        w.save(self.book)
+        w.close()
+        if add_files:
+            for path in ('Schematic/A.SchLib', 'Footprints/A.PcbLib'):
+                p = self.seed / path
+                p.parent.mkdir(exist_ok=True)
+                p.write_text('test library bytes')
+        self.git('add', '.')
+        self.git('commit', '-m', 'component library refs')
+        self.head_sha = self.git('rev-parse', 'HEAD')
+        self.pr['head']['sha'] = self.head_sha
+        self.git('push', 'origin', 'feature')
+
+    def test_new_library_files_in_same_pr_are_found(self):
+        self.prepare_library_refs(add_files=True)
+        self.invoke(apply=True, side='ours')
+        report = json.loads((self.artifacts / 'validation.json').read_text())
+        self.assertEqual(report['errors'], 0)
+        self.assertEqual(report['phase'], 'published result')
+        self.assertIn('Schematic/A.SchLib', self.ci.tracked_files('HEAD', cwd=self.seed))
+
+    def test_missing_library_files_block_push(self):
+        self.prepare_library_refs(add_files=False)
+        with self.assertRaisesRegex(ValueError, 'Проверка компонентов'):
+            self.invoke(apply=True, side='ours')
+        self.assertEqual(self.git('--git-dir', str(self.remote), 'rev-parse', 'feature'), self.head_sha)
+        report = json.loads((self.artifacts / 'validation.json').read_text())
+        self.assertEqual(report['errors'], 2)
+        self.assertEqual({i['code'] for i in report['issues']}, {'missing_file'})
+
     def test_invalid_component_blocks_apply_before_push(self):
         self.git('switch', 'feature')
         w = openpyxl.load_workbook(self.book)
@@ -200,5 +235,6 @@ class PipelineTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
 
 
