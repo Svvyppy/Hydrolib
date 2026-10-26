@@ -20,17 +20,17 @@
 		<FootprintPath1>Footprints\Inductance\IHLP-4040.PcbLib</FootprintPath1>
 		<FootprintRef1>IHLP-4040</FootprintRef1>
 		<Inductance>33</Inductance>
-		<Current>4.4</Current>
+		<Current>4,4 А</Current>
 		<Value>33 мк</Value>
 	</Part>
 	<Part>
 		<PartNumber>B82472G6683M</PartNumber>
-		<Description>Индуктивность на 68 мкГн, номинальный ток 0,82 A</Description>
+		<Description>Индуктивность на 68 мкГн, номинальный ток 0,82 А A</Description>
 		<Comment>B82472G6683M</Comment>
 		<FootprintPath1>Footprints\Inductance\7.3x7.3.PcbLib</FootprintPath1>
 		<FootprintRef1>7.3x7.3</FootprintRef1>
 		<Inductance>68</Inductance>
-		<Current>0.82</Current>
+		<Current>0,82 А</Current>
 		<Value>68 мк</Value>
 	</Part>
 	<Part>
@@ -43,7 +43,7 @@
 		<FootprintPath3>Footprints\Inductance\.PcbLib</FootprintPath3>
 		<FootprintPath4>Footprints\Inductance\.PcbLib</FootprintPath4>
 		<Inductance>4.7</Inductance>
-		<Current>5.5</Current>
+		<Current>5,5 А</Current>
 		<Value>4,7 мк</Value>
 	</Part>
 	<Part>
@@ -56,7 +56,7 @@
 		<FootprintPath3>Footprints\Inductance\.PcbLib</FootprintPath3>
 		<FootprintPath4>Footprints\Inductance\.PcbLib</FootprintPath4>
 		<Inductance>22</Inductance>
-		<Current>5</Current>
+		<Current>5 А</Current>
 		<Value>22 мк</Value>
 	</Part>
 	<Part>
@@ -69,7 +69,7 @@
 		<FootprintPath3>Footprints\Inductance\.PcbLib</FootprintPath3>
 		<FootprintPath4>Footprints\Inductance\.PcbLib</FootprintPath4>
 		<Inductance>22</Inductance>
-		<Current>1,05</Current>
+		<Current>1,05 А</Current>
 		<Value>22 мк</Value>
 	</Part>
 	<Part>
@@ -82,12 +82,12 @@
 		<FootprintPath3>Footprints\Inductance\.PcbLib</FootprintPath3>
 		<FootprintPath4>Footprints\Inductance\.PcbLib</FootprintPath4>
 		<Inductance>0.33</Inductance>
-		<Current>15</Current>
+		<Current>15 А</Current>
 		<Value>0,33 мк</Value>
 	</Part>
 	<Part>
 		<PartNumber>B82477R4683M100</PartNumber>
-		<Description>Индуктивность на 68 мкГн, номинальный ток 2,65 A</Description>
+		<Description>Индуктивность на 68 мкГн, номинальный ток 2,65 А A</Description>
 		<Comment>B82477R4683M100</Comment>
 		<FootprintPath1>Footprints\Inductance\12.5x12.5.PcbLib</FootprintPath1>
 		<FootprintRef1>12.5x12.5</FootprintRef1>
@@ -95,12 +95,12 @@
 		<FootprintPath3>Footprints\Inductance\.PcbLib</FootprintPath3>
 		<FootprintPath4>Footprints\Inductance\.PcbLib</FootprintPath4>
 		<Inductance>68</Inductance>
-		<Current>2.65</Current>
+		<Current>2,65 А</Current>
 		<Value>68 мк</Value>
 	</Part>
 	<Part>
 		<PartNumber>SDR0403-120ML</PartNumber>
-		<Description>Индуктивность на 12 мкГн, номинальный ток 1,05 A</Description>
+		<Description>Индуктивность на 12 мкГн, номинальный ток 1,05 А A</Description>
 		<Comment>SDR0403-120ML</Comment>
 		<FootprintPath1>Footprints\Inductance\4.5x4_wired.PcbLib</FootprintPath1>
 		<FootprintRef1>4.5x4_wired</FootprintRef1>
@@ -108,20 +108,258 @@
 		<FootprintPath3>Footprints\Inductance\.PcbLib</FootprintPath3>
 		<FootprintPath4>Footprints\Inductance\.PcbLib</FootprintPath4>
 		<Inductance>12</Inductance>
-		<Current>1.05</Current>
+		<Current>1,05 А</Current>
 		<Value>12 мк</Value>
 	</Part>
 	<Part>
 		<PartNumber>M20VN</PartNumber>
 		<Description>Накопительная индуктивность для обратноходового преобразователя, L1=1.2uH, магнитопровод М20ВН, 20х10х5, первичная обмотка d1.3мм</Description>
-		<Comment>M20VN</Comment>
+		<Comment>М20ВН 20х10х5</Comment>
 		<FootprintPath1>Footprints\Inductance\M20VN.PcbLib</FootprintPath1>
 		<FootprintRef1>M20VN</FootprintRef1>
 		<FootprintPath2>Footprints\Inductance\.PcbLib</FootprintPath2>
 		<FootprintPath3>Footprints\Inductance\.PcbLib</FootprintPath3>
 		<FootprintPath4>Footprints\Inductance\.PcbLib</FootprintPath4>
 		<Inductance>1.2</Inductance>
-		<Current>15</Current>
+		<Current>15 А</Current>
 		<Value>1.2 мк</Value>
+	</Part>
+	<Part>
+		<PartNumber>IHLP4040DZER470M11</PartNumber>
+		<Description>ЧИП-индуктивность экранированная 47мкГн ±20% 3,3A 145мОм 4040</Description>
+		<Comment>IHLP4040DZER470M11</Comment>
+		<FootprintPath1>Footprints\Inductance\IHLP-4040.PcbLib</FootprintPath1>
+		<FootprintRef1>IHLP-4040</FootprintRef1>
+		<FootprintPath2>Footprints\Inductance\.PcbLib</FootprintPath2>
+		<FootprintPath3>Footprints\Inductance\.PcbLib</FootprintPath3>
+		<FootprintPath4>Footprints\Inductance\.PcbLib</FootprintPath4>
+		<Inductance>47</Inductance>
+		<Current>3,3 А</Current>
+		<Value>47 мк</Value>
+	</Part>
+	<Part>
+		<PartNumber>IHLP4040DZER101M11</PartNumber>
+		<Description>ЧИП-индуктивность экранированная 100мкГн ±20% 2,5A 270мОм 4040</Description>
+		<Comment>IHLP4040DZER101M11</Comment>
+		<FootprintPath1>Footprints\Inductance\IHLP-4040.PcbLib</FootprintPath1>
+		<FootprintRef1>IHLP-4040</FootprintRef1>
+		<FootprintPath2>Footprints\Inductance\.PcbLib</FootprintPath2>
+		<FootprintPath3>Footprints\Inductance\.PcbLib</FootprintPath3>
+		<FootprintPath4>Footprints\Inductance\.PcbLib</FootprintPath4>
+		<Inductance>100</Inductance>
+		<Current>3,3 А</Current>
+		<Value>100 мк</Value>
+	</Part>
+	<Part>
+		<PartNumber>HV_trans</PartNumber>
+		<Description>Импульсный трансформатор для поджига вспышки</Description>
+		<Comment>HV_trans</Comment>
+		<FootprintPath1>Footprints\Inductance\EE16_transformer.PcbLib</FootprintPath1>
+		<FootprintRef1>EE16_transformer</FootprintRef1>
+		<FootprintPath2>Footprints\Inductance\.PcbLib</FootprintPath2>
+		<FootprintPath3>Footprints\Inductance\.PcbLib</FootprintPath3>
+		<FootprintPath4>Footprints\Inductance\.PcbLib</FootprintPath4>
+		<Current>10000 А</Current>
+		<Value>0</Value>
+	</Part>
+	<Part>
+		<PartNumber>CDSPRH127-150M</PartNumber>
+		<Description>Индуктивность на 15 мкГн, номинальный ток 8,4 А</Description>
+		<Comment>CDSPRH127-150M</Comment>
+		<FootprintPath1>Footprints\Inductance\SPRH127.PcbLib</FootprintPath1>
+		<FootprintRef1>SPRH127</FootprintRef1>
+		<FootprintPath2>Footprints\Inductance\.PcbLib</FootprintPath2>
+		<FootprintPath3>Footprints\Inductance\.PcbLib</FootprintPath3>
+		<FootprintPath4>Footprints\Inductance\.PcbLib</FootprintPath4>
+		<Inductance>15</Inductance>
+		<Current>8,4 А</Current>
+		<Value>15 мк</Value>
+	</Part>
+	<Part>
+		<PartNumber>CDSP43-1R0M</PartNumber>
+		<Description>Индуктивность на 1 мкГн, номинальный ток 4,3 А A</Description>
+		<Comment>CDSP43-1R0M</Comment>
+		<FootprintPath1>Footprints\Inductance\4.5x4_wired.PcbLib</FootprintPath1>
+		<FootprintRef1>4.5x4_wired</FootprintRef1>
+		<FootprintPath2>Footprints\Inductance\.PcbLib</FootprintPath2>
+		<FootprintPath3>Footprints\Inductance\.PcbLib</FootprintPath3>
+		<FootprintPath4>Footprints\Inductance\.PcbLib</FootprintPath4>
+		<Inductance>1</Inductance>
+		<Current>4,3 А</Current>
+		<Value>1 мк</Value>
+	</Part>
+	<Part>
+		<PartNumber>CDSPRH127-331M</PartNumber>
+		<Description>Индуктивность на 330 мкГн, номинальный ток 1,79 А A</Description>
+		<Comment>CDSPRH127-331M</Comment>
+		<FootprintPath1>Footprints\Inductance\12.8x12.8.PcbLib</FootprintPath1>
+		<FootprintRef1>12.8x12.8</FootprintRef1>
+		<FootprintPath2>Footprints\Inductance\.PcbLib</FootprintPath2>
+		<FootprintPath3>Footprints\Inductance\.PcbLib</FootprintPath3>
+		<FootprintPath4>Footprints\Inductance\.PcbLib</FootprintPath4>
+		<Inductance>330</Inductance>
+		<Current>1,79 А</Current>
+		<Value>330 мк</Value>
+	</Part>
+	<Part>
+		<PartNumber>SP43-150K</PartNumber>
+		<Description>Индуктивность на 15 мкГн, номинальный ток 1,3 А</Description>
+		<Comment>SP43-150K</Comment>
+		<FootprintPath1>Footprints\Inductance\SP43.PcbLib</FootprintPath1>
+		<FootprintRef1>SP43</FootprintRef1>
+		<FootprintPath2>Footprints\Inductance\.PcbLib</FootprintPath2>
+		<FootprintPath3>Footprints\Inductance\.PcbLib</FootprintPath3>
+		<FootprintPath4>Footprints\Inductance\.PcbLib</FootprintPath4>
+		<Inductance>15</Inductance>
+		<Current>1,3 А</Current>
+		<Value>15 мк</Value>
+	</Part>
+	<Part>
+		<PartNumber>B82472G6472M</PartNumber>
+		<Description>Индуктивность на 4,7 мкГн, номинальный ток 2,5 А</Description>
+		<Comment>B82472G6472M</Comment>
+		<FootprintPath1>Footprints\Inductance\B82462G4.PcbLib</FootprintPath1>
+		<FootprintRef1>B82462G4</FootprintRef1>
+		<FootprintPath2>Footprints\Inductance\.PcbLib</FootprintPath2>
+		<FootprintPath3>Footprints\Inductance\.PcbLib</FootprintPath3>
+		<FootprintPath4>Footprints\Inductance\.PcbLib</FootprintPath4>
+		<Inductance>4.7</Inductance>
+		<Current>2,5 А</Current>
+		<Value>4,7 мк</Value>
+	</Part>
+	<Part>
+		<PartNumber>CDRH6D12NP-2R2NC</PartNumber>
+		<Description>Индуктивность на 2,2 мкГн, номинальный ток 2,5 А</Description>
+		<Comment>CDRH6D12NP-2R2NC</Comment>
+		<FootprintPath1>Footprints\Inductance\CDRH6D12.PcbLib</FootprintPath1>
+		<FootprintRef1>CDRH6D12</FootprintRef1>
+		<FootprintPath2>Footprints\Inductance\.PcbLib</FootprintPath2>
+		<FootprintPath3>Footprints\Inductance\.PcbLib</FootprintPath3>
+		<FootprintPath4>Footprints\Inductance\.PcbLib</FootprintPath4>
+		<Inductance>2.2</Inductance>
+		<Current>2,5 А</Current>
+		<Value>2,2 мк</Value>
+	</Part>
+	<Part>
+		<PartNumber>GP2426SR</PartNumber>
+		<Description>Телекоммуникационный трансформатор 100/1000 Base-T +POE+, 1CT:1CT, DCR=1.5Ohm MAX, изоляция 1500В, 24SMD</Description>
+		<Comment>GP2426SR</Comment>
+		<FootprintPath1>Footprints\Inductance\GP2426SR.PcbLib</FootprintPath1>
+		<FootprintRef1>GP2426SR</FootprintRef1>
+		<FootprintPath2>Footprints\Inductance\.PcbLib</FootprintPath2>
+		<FootprintPath3>Footprints\Inductance\.PcbLib</FootprintPath3>
+		<FootprintPath4>Footprints\Inductance\.PcbLib</FootprintPath4>
+		<Inductance>0</Inductance>
+		<Current>0,0 А</Current>
+		<Value>350 мк</Value>
+	</Part>
+	<Part>
+		<PartNumber>CDSP43-2R2M</PartNumber>
+		<Description>Катушка индуктивности SMD 2.2мкГн ±10%, 3.95A, ,не экранированная 4.5*4.3*3.2мм</Description>
+		<Comment>CDSP43-2R2M</Comment>
+		<FootprintPath1>Footprints\Inductance\4.5x4_wired.PcbLib</FootprintPath1>
+		<FootprintRef1>4.5x4_wired</FootprintRef1>
+		<FootprintPath2>Footprints\Inductance\.PcbLib</FootprintPath2>
+		<FootprintPath3>Footprints\Inductance\.PcbLib</FootprintPath3>
+		<FootprintPath4>Footprints\Inductance\.PcbLib</FootprintPath4>
+		<Inductance>2.2</Inductance>
+		<Current>4,2 А</Current>
+		<Value>2,2 мк</Value>
+	</Part>
+	<Part>
+		<PartNumber>IHLP2020BZER2R2M01</PartNumber>
+		<Description>Катушка индуктивности SMD экранированная 2,2мкГн ±20% 4,2A 50,1мОм 2020 лента на катушке</Description>
+		<Comment>IHLP2020BZER2R2M01</Comment>
+		<FootprintPath1>Footprints\Inductance\IHLP-2020.PcbLib</FootprintPath1>
+		<FootprintRef1>IHLP-2020</FootprintRef1>
+		<FootprintPath2>Footprints\Inductance\.PcbLib</FootprintPath2>
+		<FootprintPath3>Footprints\Inductance\.PcbLib</FootprintPath3>
+		<FootprintPath4>Footprints\Inductance\.PcbLib</FootprintPath4>
+		<Inductance>2.2</Inductance>
+		<Current>4,5 А</Current>
+		<Value>2,2 мк</Value>
+	</Part>
+	<Part>
+		<PartNumber>B78476A8065A003</PartNumber>
+		<Description>Телекоммуникационный трансформатор, 10/100Base-T 1CT:1CT, 16 выводов, 12.7x6.9x5.6mm</Description>
+		<Comment>B78476A8065A003</Comment>
+		<FootprintPath1>Footprints\Inductance\B78476A8065A003.PcbLib</FootprintPath1>
+		<FootprintRef1>B78476A8065A003</FootprintRef1>
+		<FootprintPath2>Footprints\Inductance\.PcbLib</FootprintPath2>
+		<FootprintPath3>Footprints\Inductance\.PcbLib</FootprintPath3>
+		<FootprintPath4>Footprints\Inductance\.PcbLib</FootprintPath4>
+		<Inductance>0</Inductance>
+		<Current>0,0 А</Current>
+		<Value>350 мк</Value>
+	</Part>
+	<Part>
+		<PartNumber>MPXV1D1250L150</PartNumber>
+		<Description>Катушка индуктивности 15мкГн ±20% 8.2A 30.8мОм</Description>
+		<Comment>MPXV1D1250L150</Comment>
+		<FootprintPath1>Footprints\Inductance\MPXV1D1250.PcbLib</FootprintPath1>
+		<FootprintRef1>MPXV1D1250</FootprintRef1>
+		<FootprintPath2>Footprints\Inductance\.PcbLib</FootprintPath2>
+		<FootprintPath3>Footprints\Inductance\.PcbLib</FootprintPath3>
+		<FootprintPath4>Footprints\Inductance\.PcbLib</FootprintPath4>
+		<Inductance>15</Inductance>
+		<Current>8,2 А</Current>
+		<Value>15 мк</Value>
+	</Part>
+	<Part>
+		<PartNumber>H5120NLT</PartNumber>
+		<Description>Телекоммуникационный трансформатор 10/100/1000 Base-T, 1CT:1CT, изоляция 1500В</Description>
+		<Comment>H5120NLT</Comment>
+		<FootprintPath1>Footprints\Inductance\H5120NLT.PcbLib</FootprintPath1>
+		<FootprintRef1>H5120NLT</FootprintRef1>
+		<FootprintPath2>Footprints\Inductance\.PcbLib</FootprintPath2>
+		<FootprintPath3>Footprints\Inductance\.PcbLib</FootprintPath3>
+		<FootprintPath4>Footprints\Inductance\.PcbLib</FootprintPath4>
+		<Inductance>0</Inductance>
+		<Current>0,0 А</Current>
+		<Value>350 мк</Value>
+	</Part>
+	<Part>
+		<PartNumber>IHLP4040DZER150M11</PartNumber>
+		<Description>Катушка индуктивности SMD экранированная 15мкГн ±20% 6,25A 45мОм</Description>
+		<Comment>IHLP4040DZER150M11</Comment>
+		<FootprintPath1>Footprints\Inductance\IHLP-4040.PcbLib</FootprintPath1>
+		<FootprintRef1>IHLP-4040</FootprintRef1>
+		<FootprintPath2>Footprints\Inductance\.PcbLib</FootprintPath2>
+		<FootprintPath3>Footprints\Inductance\.PcbLib</FootprintPath3>
+		<FootprintPath4>Footprints\Inductance\.PcbLib</FootprintPath4>
+		<Inductance>15</Inductance>
+		<Current>6,25 А</Current>
+		<Value>15 мк</Value>
+	</Part>
+	<Part>
+		<PartNumber>Transformer_RM8</PartNumber>
+		<Description>Трансформатор на сердечнике RM8</Description>
+		<Comment>Transformer_RM8</Comment>
+		<FootprintPath1>Footprints\Inductance\RM8_trans.PcbLib</FootprintPath1>
+		<FootprintRef1>RM8_trans</FootprintRef1>
+		<FootprintPath2>Footprints\Inductance\.PcbLib</FootprintPath2>
+		<FootprintPath3>Footprints\Inductance\.PcbLib</FootprintPath3>
+		<FootprintPath4>Footprints\Inductance\.PcbLib</FootprintPath4>
+	</Part>
+	<Part>
+		<PartNumber>Inductance_RM8</PartNumber>
+		<Description>Индуктивность на сердечнике RM8</Description>
+		<Comment>Inductance_RM8</Comment>
+		<FootprintPath1>Footprints\Inductance\RM8_trans.PcbLib</FootprintPath1>
+		<FootprintRef1>RM8_trans</FootprintRef1>
+		<FootprintPath2>Footprints\Inductance\.PcbLib</FootprintPath2>
+		<FootprintPath3>Footprints\Inductance\.PcbLib</FootprintPath3>
+		<FootprintPath4>Footprints\Inductance\.PcbLib</FootprintPath4>
+		<Value>0</Value>
+	</Part>
+	<Part>
+		<PartNumber>BLM18AG102SN1D</PartNumber>
+		<Description>Дроссель подавления ЭМП</Description>
+		<Comment>BLM18AG102SN1D</Comment>
+		<FootprintPath1>Footprints\Inductance\0603L.PcbLib</FootprintPath1>
+		<FootprintRef1>0603L</FootprintRef1>
+		<FootprintPath2>Footprints\Inductance\.PcbLib</FootprintPath2>
+		<FootprintPath3>Footprints\Inductance\.PcbLib</FootprintPath3>
+		<FootprintPath4>Footprints\Inductance\.PcbLib</FootprintPath4>
 	</Part>
 </Inductance>

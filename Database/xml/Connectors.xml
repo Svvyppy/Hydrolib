@@ -24,7 +24,7 @@
 		<Comment>PLS-4</Comment>
 		<LibraryPath>Schematic\Connectors\Conn_4pin.SchLib</LibraryPath>
 		<LibraryRef>Conn_4pin</LibraryRef>
-		<FootprintPath1>Footprints\Connectors\PLS\PLS_ALL.PcbLib</FootprintPath1>
+		<FootprintPath1>Footprints\Connectors\PLS_PLD_PBS_PBD_and_others\PLS_ALL.PcbLib</FootprintPath1>
 		<FootprintRef1>PLS4</FootprintRef1>
 	</Part>
 	<Part>
@@ -230,7 +230,412 @@
 		<Comment>PLS-2</Comment>
 		<LibraryPath>Schematic\Connectors\Conn_2pin.SchLib</LibraryPath>
 		<LibraryRef>Conn_2pin</LibraryRef>
-		<FootprintPath1>Footprints\Connectors\PLS\PLS_ALL.PcbLib</FootprintPath1>
+		<FootprintPath1>Footprints\Connectors\PLS_PLD_PBS_PBD_and_others\PLS_ALL.PcbLib</FootprintPath1>
 		<FootprintRef1>PLS2</FootprintRef1>
+	</Part>
+	<Part>
+		<PartNumber>PLH-4</PartNumber>
+		<Description>Гребенка высокая 4 пина типоразмер 18 (промежуток 10.4мм) Connfly </Description>
+		<Comment>PLH-4</Comment>
+		<LibraryPath>Schematic\Connectors\Conn_4pin.SchLib</LibraryPath>
+		<LibraryRef>Conn_4pin</LibraryRef>
+		<FootprintPath1>Footprints\Connectors\PLS_PLD_PBS_PBD_and_others\PLH_ALL.PcbLib</FootprintPath1>
+		<FootprintRef1>PLH4_type18</FootprintRef1>
+	</Part>
+	<Part>
+		<PartNumber>PLH-2</PartNumber>
+		<Description>Гребенка высокая 2 пина типоразмер 18 (промежуток 10.4мм) Connfly</Description>
+		<Comment>PLH-2</Comment>
+		<LibraryPath>Schematic\Connectors\Conn_2pin.SchLib</LibraryPath>
+		<LibraryRef>Conn_2pin</LibraryRef>
+		<FootprintPath1>Footprints\Connectors\PLS_PLD_PBS_PBD_and_others\PLH_ALL.PcbLib</FootprintPath1>
+		<FootprintRef1>PLH2_type18</FootprintRef1>
+	</Part>
+	<Part>
+		<PartNumber>PBS-4</PartNumber>
+		<Description>Розетка 4 пина высота 8.5</Description>
+		<Comment>PBS-4</Comment>
+		<LibraryPath>Schematic\Connectors\Conn_4pin.SchLib</LibraryPath>
+		<LibraryRef>Conn_4pin</LibraryRef>
+		<FootprintPath1>Footprints\Connectors\PLS_PLD_PBS_PBD_and_others\PBS_ALL.PcbLib</FootprintPath1>
+		<FootprintRef1>PBS4_8.5</FootprintRef1>
+	</Part>
+	<Part>
+		<PartNumber>PBS-2</PartNumber>
+		<Description>Розетка 4 пина высота 8.5</Description>
+		<Comment>PBS-2</Comment>
+		<LibraryPath>Schematic\Connectors\Conn_2pin.SchLib</LibraryPath>
+		<LibraryRef>Conn_2pin</LibraryRef>
+		<FootprintPath1>Footprints\Connectors\PLS_PLD_PBS_PBD_and_others\PBS_ALL.PcbLib</FootprintPath1>
+		<FootprintRef1>PBS2_8.5</FootprintRef1>
+	</Part>
+	<Part>
+		<PartNumber>CWF-2</PartNumber>
+		<Description>2-пиновый разъем с ключом</Description>
+		<Comment>CWF-2</Comment>
+		<LibraryPath>Schematic\Connectors\Conn_2pin.SchLib</LibraryPath>
+		<LibraryRef>Conn_2pin</LibraryRef>
+		<FootprintPath1>Footprints\Connectors\CWF\CWF-2.PcbLib</FootprintPath1>
+		<FootprintRef1>CWF-2</FootprintRef1>
+	</Part>
+	<Part>
+		<PartNumber>PLS-5</PartNumber>
+		<Description>Гребенка 5 пинов</Description>
+		<Comment>PLS-5</Comment>
+		<LibraryPath>Schematic\Connectors\Conn_5pin.SchLib</LibraryPath>
+		<LibraryRef>Conn_5pin</LibraryRef>
+		<FootprintPath1>Footprints\Connectors\PLS_PLD_PBS_PBD_and_others\PLS_ALL.PcbLib</FootprintPath1>
+		<FootprintRef1>PLS5</FootprintRef1>
+	</Part>
+	<Part>
+		<PartNumber>PBD-40</PartNumber>
+		<Description>Гребенка 40 пинов</Description>
+		<Comment>PBD-40</Comment>
+		<LibraryPath>Schematic\Connectors\Conn_40pin_double.SchLib</LibraryPath>
+		<LibraryRef>Conn_40pin_double</LibraryRef>
+		<FootprintPath1>Footprints\Connectors\PLS_PLD_PBS_PBD_and_others\PBD_ALL.PcbLib</FootprintPath1>
+		<FootprintRef1>PBD40_8.5</FootprintRef1>
+	</Part>
+	<Part>
+		<PartNumber>PLD-40</PartNumber>
+		<Description>Гребенка 40 пинов</Description>
+		<Comment>PLD-40</Comment>
+		<LibraryPath>Schematic\Connectors\Conn_40pin_double.SchLib</LibraryPath>
+		<LibraryRef>Conn_40pin_double</LibraryRef>
+		<FootprintPath1>Footprints\Connectors\PLS_PLD_PBS_PBD_and_others\PLD_ALL.PcbLib</FootprintPath1>
+		<FootprintRef1>PLD40</FootprintRef1>
+	</Part>
+	<Part>
+		<PartNumber>Picoblade_533984002</PartNumber>
+		<Description>2pin, 1.25mm, вилка, PicoBlade, на плату, SMT</Description>
+		<Comment>533984002</Comment>
+		<LibraryPath>Schematic\Connectors\Conn_2pin_2shield.SchLib</LibraryPath>
+		<LibraryRef>Conn_2pin_2shield</LibraryRef>
+		<FootprintPath1>Footprints\Connectors\Picoblade_533984002.PcbLib</FootprintPath1>
+		<FootprintRef1>Picoblade_533984002</FootprintRef1>
+	</Part>
+	<Part>
+		<PartNumber>PLS-3</PartNumber>
+		<Description>Гребенка 3 пина</Description>
+		<Comment>PLS-3</Comment>
+		<LibraryPath>Schematic\Connectors\Conn_3pin.SchLib</LibraryPath>
+		<LibraryRef>Conn_3pin</LibraryRef>
+		<FootprintPath1>Footprints\Connectors\PLS_PLD_PBS_PBD_and_others\PLS_ALL.PcbLib</FootprintPath1>
+		<FootprintRef1>PLS3</FootprintRef1>
+	</Part>
+	<Part>
+		<PartNumber>USB_2.0</PartNumber>
+		<Description>Двойной USB 2.0</Description>
+		<Comment>USB_2.0</Comment>
+		<LibraryPath>Schematic\USB_2.0.SchLib</LibraryPath>
+		<LibraryRef>USB_2.0</LibraryRef>
+		<FootprintPath1>Footprints\USB_2.0.PcbLib</FootprintPath1>
+		<FootprintRef1>USB_2.0</FootprintRef1>
+	</Part>
+	<Part>
+		<PartNumber>USB_3.0</PartNumber>
+		<Description>Двойной USB 3.0</Description>
+		<Comment>USB_3.0</Comment>
+		<LibraryPath>Schematic\USB_3.0.SchLib</LibraryPath>
+		<LibraryRef>USB_3.0</LibraryRef>
+		<FootprintPath1>Footprints\USB_3.0.PcbLib</FootprintPath1>
+		<FootprintRef1>USB_3.0</FootprintRef1>
+	</Part>
+	<Part>
+		<PartNumber>123A-30M00</PartNumber>
+		<Description>Разъем: M.2 (NGFF); горизонтальный; SMT; gold flash; PIN: 67; 0,5А</Description>
+		<Comment>123A-30M00</Comment>
+		<LibraryPath>Schematic\Connectors\M2.SchLib</LibraryPath>
+		<LibraryRef>M2</LibraryRef>
+		<FootprintPath1>Footprints\M2.PcbLib</FootprintPath1>
+		<FootprintRef1>PCIe M2</FootprintRef1>
+	</Part>
+	<Part>
+		<PartNumber>SD_holder</PartNumber>
+		<Description>Разъем под сд карту</Description>
+		<Comment>SD card</Comment>
+		<LibraryPath>Schematic\MSD-10-C.SchLib</LibraryPath>
+		<LibraryRef>MSD-10-C</LibraryRef>
+		<FootprintPath1>Footprints\CUI_MSD-10-C.PcbLib</FootprintPath1>
+		<FootprintRef1>CUI_MSD-10-C</FootprintRef1>
+	</Part>
+	<Part>
+		<PartNumber>DF12(3.0)-32DP</PartNumber>
+		<Description>Разъем плата-плата 32 пина, мама, шаг 0.5мм, высота 3мм</Description>
+		<Comment>DF12(3.0)-32DP</Comment>
+		<LibraryPath>Schematic\Connectors\Conn_32pin.SchLib</LibraryPath>
+		<LibraryRef>Conn_32pin</LibraryRef>
+		<FootprintPath1>Footprints\Connectors\DF12(3.0)-32DP.PcbLib</FootprintPath1>
+		<FootprintRef1>DF12(3.0)-32DP</FootprintRef1>
+	</Part>
+	<Part>
+		<PartNumber>DF12(3.0)-32DS</PartNumber>
+		<Description>Разъем плата-плата 32 пина, папа, шаг 0.5мм, высота 3мм</Description>
+		<Comment>DF12(3.0)-32DS</Comment>
+		<LibraryPath>Schematic\Connectors\Conn_32pin.SchLib</LibraryPath>
+		<LibraryRef>Conn_32pin</LibraryRef>
+		<FootprintPath1>Footprints\Connectors\DF12(3.0)-32DS.PcbLib</FootprintPath1>
+		<FootprintRef1>DF12(3.0)-32DS</FootprintRef1>
+	</Part>
+	<Part>
+		<PartNumber>DF40C-50DP</PartNumber>
+		<Description>Разъем плата-плата 50 пинов, мама, шаг 0.4мм</Description>
+		<Comment>DF40C-50DP</Comment>
+		<LibraryPath>Schematic\Connectors\Conn_50pin_double.SchLib</LibraryPath>
+		<LibraryRef>Conn_50pin_double</LibraryRef>
+		<FootprintPath1>Footprints\Connectors\DF40C-50DP.PcbLib</FootprintPath1>
+		<FootprintRef1>DF40C-50DP</FootprintRef1>
+	</Part>
+	<Part>
+		<PartNumber>DF40C-50DS</PartNumber>
+		<Description>Разъем плата-плата 50 пинов, папа, шаг 0.4мм</Description>
+		<Comment>DF40C-50DS</Comment>
+		<LibraryPath>Schematic\Connectors\Conn_50pin_double.SchLib</LibraryPath>
+		<LibraryRef>Conn_50pin_double</LibraryRef>
+		<FootprintPath1>Footprints\Connectors\DF40C-50DS.PcbLib</FootprintPath1>
+		<FootprintRef1>DF40C-50DS</FootprintRef1>
+	</Part>
+	<Part>
+		<PartNumber>DF40HC(4.0)-50DS</PartNumber>
+		<Description>Разъем плата-плата 50 пинов, папа, шаг 0.4мм</Description>
+		<Comment>DF40HC(4.0)-50DS</Comment>
+		<LibraryPath>Schematic\Connectors\Conn_50pin_double.SchLib</LibraryPath>
+		<LibraryRef>Conn_50pin_double</LibraryRef>
+		<FootprintPath1>Footprints\Connectors\DF40HC(4.0)-50DS.PcbLib</FootprintPath1>
+		<FootprintRef1>DF40HC(4.0)-50DS</FootprintRef1>
+	</Part>
+	<Part>
+		<PartNumber>PLS-6</PartNumber>
+		<Description>Гребенка 6 пинов</Description>
+		<Comment>PLS-6</Comment>
+		<LibraryPath>Schematic\Connectors\Conn_6pin.SchLib</LibraryPath>
+		<LibraryRef>Conn_6pin</LibraryRef>
+		<FootprintPath1>Footprints\Connectors\PLS_PLD_PBS_PBD_and_others\PLS_ALL.PcbLib</FootprintPath1>
+		<FootprintRef1>PLS6</FootprintRef1>
+	</Part>
+	<Part>
+		<PartNumber>MR60PB-M</PartNumber>
+		<Description>60 А (40 продолжительно), 3 контакта, прямой отец</Description>
+		<Comment>MR60PB-M</Comment>
+		<LibraryPath>Schematic\Connectors\Conn_3pin.SchLib</LibraryPath>
+		<LibraryRef>Conn_3pin</LibraryRef>
+		<FootprintPath1>Footprints\Connectors\MR60PB-M.PcbLib</FootprintPath1>
+		<FootprintRef1>MR60PB-M</FootprintRef1>
+	</Part>
+	<Part>
+		<PartNumber>XT90PB-M</PartNumber>
+		<Description>90 А (60 продолжительно), 2 контакта, прямой отец</Description>
+		<Comment>XT90PB-M</Comment>
+		<LibraryPath>Schematic\Connectors\Polar_Conn.SchLib</LibraryPath>
+		<LibraryRef>Polar_Conn</LibraryRef>
+		<FootprintPath1>Footprints\Connectors\XT90PB-M.PcbLib</FootprintPath1>
+		<FootprintRef1>XT90PB-M</FootprintRef1>
+	</Part>
+	<Part>
+		<PartNumber>IDC_40_Male conector</PartNumber>
+		<Description>IDC 40-пиновый разъём прямая вилка</Description>
+		<Comment>IDC_40_Male conector</Comment>
+		<LibraryPath>Schematic\Connectors\Conn_40pin_double.SchLib</LibraryPath>
+		<LibraryRef>Conn_40pin_double</LibraryRef>
+		<FootprintPath1>Footprints\Connectors\IDC_40_Male conector.PcbLib</FootprintPath1>
+		<FootprintRef1>IDC_40_Male conector</FootprintRef1>
+	</Part>
+	<Part>
+		<PartNumber>DF40C-40DP</PartNumber>
+		<Description>Разъем плата-плата 40 пинов, мама, шаг 0.4мм</Description>
+		<Comment>DF40C-40DP</Comment>
+		<LibraryPath>Schematic\Connectors\Conn_40pin_double.SchLib</LibraryPath>
+		<LibraryRef>Conn_40pin_double</LibraryRef>
+		<FootprintPath1>Footprints\Connectors\DF40C-40DP.PcbLib</FootprintPath1>
+		<FootprintRef1>DF40C-40DP</FootprintRef1>
+	</Part>
+	<Part>
+		<PartNumber>DF40C-40DS</PartNumber>
+		<Description>Разъем плата-плата 40 пинов, папа, шаг 0.4мм</Description>
+		<Comment>DF40C-40DS</Comment>
+		<LibraryPath>Schematic\Connectors\Conn_40pin_double.SchLib</LibraryPath>
+		<LibraryRef>Conn_40pin_double</LibraryRef>
+		<FootprintPath1>Footprints\Connectors\DF40C-40DS.PcbLib</FootprintPath1>
+		<FootprintRef1>DF40C-40DS</FootprintRef1>
+	</Part>
+	<Part>
+		<PartNumber>M80-4001042</PartNumber>
+		<Description>5+5-контактный гнездовой DIL-разъём с вертикальным сквозным креплением</Description>
+		<Comment>M80-4001042</Comment>
+		<LibraryPath>Schematic\Connectors\Conn_10pin.SchLib</LibraryPath>
+		<LibraryRef>Conn_10pin</LibraryRef>
+		<FootprintPath1>Footprints\Connectors\M80-4001042.PcbLib</FootprintPath1>
+		<FootprintRef1>M80-4001042</FootprintRef1>
+	</Part>
+	<Part>
+		<PartNumber>Fucking M80-4001042</PartNumber>
+		<Description>5+5-контактный гнездовой DIL-разъём с вертикальным сквозным креплением. Посадочное под нестандартные длинные винты м2, чтобы шляпка винта прижималась к плате, а не к разъему. Так выше жесткость.</Description>
+		<Comment>M80-4001042</Comment>
+		<LibraryPath>Schematic\Connectors\Conn_10pin.SchLib</LibraryPath>
+		<LibraryRef>Conn_10pin</LibraryRef>
+		<FootprintPath1>Footprints\Connectors\M80-4001042_govnodelie.PcbLib</FootprintPath1>
+		<FootprintRef1>M80-4001042_govnodelie</FootprintRef1>
+	</Part>
+	<Part>
+		<PartNumber>signal_PAD</PartNumber>
+		<Description>контактная площадка под пайку тонких проводов</Description>
+		<Comment>signal_PAD</Comment>
+		<LibraryPath>Schematic\Connectors\Conn_1pin.SchLib</LibraryPath>
+		<LibraryRef>Conn_1pin</LibraryRef>
+		<FootprintPath1>Footprints\Connectors\SS_PAD.PcbLib</FootprintPath1>
+		<FootprintRef1>SS_PAD</FootprintRef1>
+	</Part>
+	<Part>
+		<PartNumber>JK0-0136NL</PartNumber>
+		<Description>Модульный разъем (с трансформатором) Cat5/6, RJ45, Гнездо,  1 порт</Description>
+		<Comment>JK0-0136NL</Comment>
+		<LibraryPath>Schematic\Connectors\JK0-0136NL.SchLib</LibraryPath>
+		<LibraryRef>JK0-0136NL</LibraryRef>
+		<FootprintPath1>Footprints\Connectors\JK00136NL.PcbLib</FootprintPath1>
+		<FootprintRef1>JK00136NL</FootprintRef1>
+	</Part>
+	<Part>
+		<PartNumber>DIN41612_48_3row_straight_female</PartNumber>
+		<Description>DIN41612R (DS1120-48F0V13), Разъем (розетка) тип B 48pin (3х16), шаг 2.54мм трехрядный прямой (ряд АBC)</Description>
+		<Comment>DIN41612_48_3row_straight_female</Comment>
+		<LibraryPath>Schematic\Connectors\Conn_48pin_3row.SchLib</LibraryPath>
+		<LibraryRef>Conn_48pin_3row</LibraryRef>
+		<FootprintPath1>Footprints\Connectors\DIN41612_48_3row_straight_female.PcbLib</FootprintPath1>
+		<FootprintRef1>DIN41612_48_3row_straight_female</FootprintRef1>
+	</Part>
+	<Part>
+		<PartNumber>DIN41612_48_3row_right_angle_male</PartNumber>
+		<Description>DIN41612R (DS1120-48M0R13), Разъем (вилка) тип B 48pin (3х16), шаг 2.54мм трехрядный угловой (ряд АВC)</Description>
+		<Comment>DIN41612_48_3row_right_angle_male</Comment>
+		<LibraryPath>Schematic\Connectors\Conn_48pin_3row.SchLib</LibraryPath>
+		<LibraryRef>Conn_48pin_3row</LibraryRef>
+		<FootprintPath1>Footprints\Connectors\DIN41612_48_3row_right_angle_male.PcbLib</FootprintPath1>
+		<FootprintRef1>DIN41612_48_3row_right_angle_male</FootprintRef1>
+	</Part>
+	<Part>
+		<PartNumber>430450200</PartNumber>
+		<Description>Разъем типа провод-плата, угловой, 3 мм, 2 контакт(-ов), Штыревой Разъем, Серия Micro-Fit для монтажа в отверстия</Description>
+		<Comment>430450200</Comment>
+		<LibraryPath>Schematic\Connectors\Conn_2pin.SchLib</LibraryPath>
+		<LibraryRef>Conn_2pin</LibraryRef>
+		<FootprintPath1>Footprints\Connectors\MOLEX_MICRO-FIT_430450200.PcbLib</FootprintPath1>
+		<FootprintRef1>MOLEX_MICRO-FIT_430450200</FootprintRef1>
+	</Part>
+	<Part>
+		<PartNumber>Akeys 5224-8P8C</PartNumber>
+		<Description>Модульный разъем, Cat3, RJ45, 8P8C, Гнездо, 8 контактов, 8 выводов, 2 порта</Description>
+		<Comment>Akeys 5224-8P8C</Comment>
+		<LibraryPath>Schematic\Connectors\Akeys 5224-8P8C.SchLib</LibraryPath>
+		<LibraryRef>Akeys 5224-8P8C</LibraryRef>
+		<FootprintPath1>Footprints\Connectors\Akeys 5224-8P8C.PcbLib</FootprintPath1>
+		<FootprintRef1>Akeys 5224-8P8C</FootprintRef1>
+	</Part>
+	<Part>
+		<PartNumber>1-406541-5-RJ45-8p8c</PartNumber>
+		<Description>Модульный разъем, Cat5, RJ45, Гнездо, 8 контакт(-ов), 8 вывод(-ов), 1 порт(-ов)</Description>
+		<Comment>1-406541-5</Comment>
+		<LibraryPath>Schematic\Connectors\RJ45-8p8c.SchLib</LibraryPath>
+		<LibraryRef>RJ45-8p8c</LibraryRef>
+		<FootprintPath1>Footprints\Connectors\1-406541-5.PcbLib</FootprintPath1>
+		<FootprintRef1>1-406541-5</FootprintRef1>
+	</Part>
+	<Part>
+		<PartNumber>HR911130A</PartNumber>
+		<Description>Однопортовый магнитный разъем RJ45 100/1000Base-T со встроенным трансформатором и светодиодами</Description>
+		<Comment>HR911130A</Comment>
+		<LibraryPath>Schematic\Connectors\HR911130A.SchLib</LibraryPath>
+		<LibraryRef>HR911130A</LibraryRef>
+		<FootprintPath1>Footprints\Connectors\HR911130A.PcbLib</FootprintPath1>
+		<FootprintRef1>HR911130A</FootprintRef1>
+	</Part>
+	<Part>
+		<PartNumber>USB_type_C_16PF-026</PartNumber>
+		<Description>USB2.0 TYPE-C 16PF-026, Разъём USB TYPE-C - розетка в плату</Description>
+		<Comment>USB_type_C_16PF-026</Comment>
+		<LibraryPath>Schematic\Connectors\USB_type_C_16PF-026.SchLib</LibraryPath>
+		<LibraryRef>USB_type_C_16PF-026</LibraryRef>
+		<FootprintPath1>Footprints\Connectors\16PF-026.PcbLib</FootprintPath1>
+		<FootprintRef1>16PF-026</FootprintRef1>
+	</Part>
+	<Part>
+		<PartNumber>467650001_microHDMI</PartNumber>
+		<Description>Разъем Micro HDMI с шагом контактов 0,40 мм, угловой разъем, для поверхностного монтажа, 19 контактов</Description>
+		<Comment>467650001</Comment>
+		<LibraryPath>Schematic\Connectors\467650001.SchLib</LibraryPath>
+		<LibraryRef>467650001</LibraryRef>
+		<FootprintPath1>Footprints\Connectors\467650001.PcbLib</FootprintPath1>
+		<FootprintRef1>467650001</FootprintRef1>
+	</Part>
+	<Part>
+		<PartNumber>USB 3.0A DS1095-05</PartNumber>
+		<Description>Разъем USB 3.0 тип A, 9 контактов, мама, угловой.</Description>
+		<Comment>USB 3.0A DS1095-05</Comment>
+		<LibraryPath>Schematic\Connectors\USB3.0A_DS1095-05.SchLib</LibraryPath>
+		<LibraryRef>USB3.0A_DS1095-05</LibraryRef>
+		<FootprintPath1>Footprints\Connectors\USB3.0A_DS1095-05.PcbLib</FootprintPath1>
+		<FootprintRef1>USB3.0A_DS1095-05</FootprintRef1>
+	</Part>
+	<Part>
+		<PartNumber>DM3AT-SF-PEJM5</PartNumber>
+		<Description>Разъем для microSD карты памяти угл.8к.1.1мм SMT</Description>
+		<Comment>DM3AT-SF-PEJM5</Comment>
+		<LibraryPath>Schematic\Connectors\DM3AT-SF-PEJM5.SchLib</LibraryPath>
+		<LibraryRef>DM3AT-SF-PEJM5</LibraryRef>
+		<FootprintPath1>Footprints\Connectors\DM3AT-SF-PEJM5.PcbLib</FootprintPath1>
+		<FootprintRef1>DM3AT-SF-PEJM5</FootprintRef1>
+	</Part>
+	<Part>
+		<PartNumber>BM04B-SRSS-TB</PartNumber>
+		<Description>Разъем штыревой на плату, поверхностый монтаж, вертикальный, 4 контакта, шаг 1 мм</Description>
+		<Comment>BM04B-SRSS-TB</Comment>
+		<LibraryPath>Schematic\Connectors\Conn_4pin_sh.SchLib</LibraryPath>
+		<LibraryRef>Conn_4pin_sh</LibraryRef>
+		<FootprintPath1>Footprints\Connectors\BM04B-SRSS-TB.PcbLib</FootprintPath1>
+		<FootprintRef1>BM04B-SRSS-TB</FootprintRef1>
+	</Part>
+	<Part>
+		<PartNumber>Mini-USB-B5F</PartNumber>
+		<Description>Разъем mini USB, розетка угловая на плату</Description>
+		<Comment>Mini-USB-B5F</Comment>
+		<LibraryPath>Schematic\Connectors\Mini-USB-B5F.SchLib</LibraryPath>
+		<LibraryRef>Mini-USB-B5F</LibraryRef>
+		<FootprintPath1>Footprints\Connectors\KLS1-229-5FA.PcbLib</FootprintPath1>
+		<FootprintRef1>KLS1-229-5FA</FootprintRef1>
+	</Part>
+	<Part>
+		<PartNumber>10018783-11111TLF</PartNumber>
+		<Description>PCI Express GEN 3 x4 слот, вертикальный, Through Hole, 64 Positions, шаг 1.00мм</Description>
+		<Comment>10018783-11111TLF</Comment>
+		<LibraryPath>Schematic\Connectors\Conn_64pin.SchLib</LibraryPath>
+		<LibraryRef>Conn_64pin</LibraryRef>
+		<FootprintPath1>Footprints\Connectors\AMPHENOL_10018783-11111TLF.PcbLib</FootprintPath1>
+		<FootprintRef1>AMPHENOL_10018783-11111TLF</FootprintRef1>
+	</Part>
+	<Part>
+		<PartNumber>Picoblade_532610371</PartNumber>
+		<Description>Picoblade 3-pin разъем</Description>
+		<Comment>Picoblade_532610371</Comment>
+		<LibraryPath>Schematic\Connectors\Picoblade_532610371.SchLib</LibraryPath>
+		<LibraryRef>Conn_3pin_2shield</LibraryRef>
+		<FootprintPath1>Footprints\Connectors\CONN_532610001-SD_03_MOL.PcbLib</FootprintPath1>
+		<FootprintRef1>CONN_532610001-SD_03_MOL</FootprintRef1>
+	</Part>
+	<Part>
+		<PartNumber>PicoBlade_53398-0471</PartNumber>
+		<Description>Разъем PicoBlade 1.25 мм, 4pin</Description>
+		<Comment>PicoBlade_53398-0471</Comment>
+		<LibraryPath>Schematic\Connectors\PicoBlade_53398-0471.SchLib</LibraryPath>
+		<LibraryRef>Conn_4pin_2shield</LibraryRef>
+		<FootprintPath1>Footprints\Connectors\53398-0471.PcbLib</FootprintPath1>
+		<FootprintRef1>53398-0471</FootprintRef1>
+	</Part>
+	<Part>
+		<PartNumber>abv228</PartNumber>
+		<Description>треханальный хуистор понижающий в корпусе lga1488 2А 1.2МГц</Description>
+		<Comment>abv228</Comment>
+		<LibraryPath>Schematic\abv228.SchLib</LibraryPath>
+		<LibraryRef>abv228</LibraryRef>
+		<FootprintPath1>Footprints\SC-70-5.PcbLib</FootprintPath1>
+		<FootprintRef1>SC-70-5</FootprintRef1>
 	</Part>
 </Connectors>

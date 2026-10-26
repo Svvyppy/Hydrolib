@@ -24,10 +24,10 @@
 	</Part>
 	<Part>
 		<PartNumber>SMAJ12CA</PartNumber>
-		<Description>Защитный диод на 12 В, рассеиваемая мощность 400 Вт</Description>
+		<Description>Двунаправленный защитный диод на 12 В, рассеиваемая мощность 400 Вт</Description>
 		<Comment>SMAJ12CA</Comment>
-		<LibraryPath>Schematic\TVS\TVS_1_1dir.SchLib</LibraryPath>
-		<LibraryRef>TVS_1_1dir</LibraryRef>
+		<LibraryPath>Schematic\TVS\TVS_1_2dir.SchLib</LibraryPath>
+		<LibraryRef>TVS_1_2dir</LibraryRef>
 		<FootprintPath1>Footprints\SMA.PcbLib</FootprintPath1>
 		<FootprintRef1>SMA</FootprintRef1>
 		<VoltageNominal>12</VoltageNominal>
@@ -93,5 +93,76 @@
 		<VoltageNominal>30</VoltageNominal>
 		<Power>1500</Power>
 		<Value>30 В</Value>
+	</Part>
+	<Part>
+		<PartNumber>SMBJ16CA</PartNumber>
+		<Description>Защитный диод двунаправленный 600Вт 16В</Description>
+		<Comment>SMBJ16CA</Comment>
+		<LibraryPath>Schematic\TVS\TVS_1_2dir.SchLib</LibraryPath>
+		<LibraryRef>TVS_1_2dir</LibraryRef>
+		<FootprintPath1>Footprints\SMB.PcbLib</FootprintPath1>
+		<FootprintRef1>SMB</FootprintRef1>
+		<VoltageNominal>16</VoltageNominal>
+		<Power>600</Power>
+		<Value>16 В</Value>
+	</Part>
+	<Part>
+		<PartNumber>PESD3V3L1UB</PartNumber>
+		<Description>Защитный диод на 3,3 В, рассеиваемая мощность 45 Вт</Description>
+		<Comment>PESD3V3L1UB</Comment>
+		<LibraryPath>Schematic\TVS\TVS_1_1dir.SchLib</LibraryPath>
+		<LibraryRef>TVS_1_1dir</LibraryRef>
+		<FootprintPath1>Footprints\SOD523.PcbLib</FootprintPath1>
+		<FootprintRef1>SOD523</FootprintRef1>
+		<VoltageNominal>3.3</VoltageNominal>
+		<Power>45</Power>
+		<Value>3,3 В</Value>
+	</Part>
+	<Part>
+		<PartNumber>SMBJ16A</PartNumber>
+		<Description>Защитный диод на 16 В, рассеиваемая мощность 600 Вт</Description>
+		<Comment>SMBJ16A</Comment>
+		<LibraryPath>Schematic\TVS\TVS_1_1dir.SchLib</LibraryPath>
+		<LibraryRef>TVS_1_1dir</LibraryRef>
+		<FootprintPath1>Footprints\SMB.PcbLib</FootprintPath1>
+		<FootprintRef1>SMB</FootprintRef1>
+		<VoltageNominal>16</VoltageNominal>
+		<Power>600</Power>
+		<Value>16 В</Value>
+	</Part>
+	<Part>
+		<PartNumber>SMAJ12A</PartNumber>
+		<Description>Защитный диод на 12 В, рассеиваемая мощность 400 Вт</Description>
+		<Comment>SMAJ12A</Comment>
+		<LibraryPath>Schematic\TVS\TVS_1_1dir.SchLib</LibraryPath>
+		<LibraryRef>TVS_1_1dir</LibraryRef>
+		<FootprintPath1>Footprints\SMA.PcbLib</FootprintPath1>
+		<FootprintRef1>SMA</FootprintRef1>
+		<VoltageNominal>12</VoltageNominal>
+		<Power>400</Power>
+		<Value>12 В</Value>
+	</Part>
+	<Part>
+		<PartNumber>PESD1CAN,215</PartNumber>
+		<Description>Защитный диод для линии CAN</Description>
+		<Comment>PESD1CAN,215</Comment>
+		<LibraryPath>Schematic\TVS\TVS_2_2dir.SchLib</LibraryPath>
+		<LibraryRef>TVS_2_2dir</LibraryRef>
+		<FootprintPath1>Footprints\SOT23-3.PcbLib</FootprintPath1>
+		<FootprintRef1>SOT23-3</FootprintRef1>
+		<Value> В</Value>
+		<Inteface>CAN</Inteface>
+	</Part>
+	<Part>
+		<PartNumber>SMAJ5.0A-TR</PartNumber>
+		<Description>Защитный диод на 5 В, рассеиваемая мощность 400 Вт</Description>
+		<Comment>SMAJ5.0A-TR</Comment>
+		<LibraryPath>Schematic\TVS\TVS_1_1dir.SchLib</LibraryPath>
+		<LibraryRef>TVS_1_1dir</LibraryRef>
+		<FootprintPath1>Footprints\SMA.PcbLib</FootprintPath1>
+		<FootprintRef1>SMA</FootprintRef1>
+		<VoltageNominal>5</VoltageNominal>
+		<Power>400</Power>
+		<Value>5 В</Value>
 	</Part>
 </TVS>

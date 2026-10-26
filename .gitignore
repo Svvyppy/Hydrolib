@@ -3,7 +3,12 @@ History/
 *Logs*/
 *Outputs*/
 *.zip
-*.Prj*
 *.Harness
 *.SchDoc
 *.PcbDoc
+~$Hydrolib_bd.xlsm‎
+
+# Workbook merge tooling
+__pycache__/
+xlsm-artifacts/
+xlsm-merge-report.json
