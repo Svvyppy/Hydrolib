@@ -97,3 +97,14 @@ class SummaryTests(unittest.TestCase):
             text = render(d, 'failure', 'a/b', '13')
             self.assertIn('Не удалось составить достоверный список', text)
             self.assertIn('duplicate &lt;ID&gt;', text)
+
+
+
+    def test_conflict_report_links_to_individual_picker(self):
+        from unittest.mock import patch
+        with tempfile.TemporaryDirectory() as d, patch.dict('os.environ', {'GITHUB_RUN_ID': '42'}):
+            Path(d, 'report.json').write_text(json.dumps({'conflicts': [{'part': 'A', 'choice': None}]}))
+            text = render(d, 'failure', 'a/b', '13')
+            self.assertIn('resolve-conflicts.html', text)
+            self.assertIn('/actions/runs/42#artifacts', text)
+            self.assertIn('resolutions_json', text)
