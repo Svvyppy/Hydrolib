@@ -3,9 +3,10 @@ from collections import Counter
 import json
 from pathlib import Path
 import openpyxl
+from file_refs import scan_file_refs
 
 
-def scan(path):
+def scan(path, files=None):
     book = openpyxl.load_workbook(path, data_only=False)
     issues = []
     try:
@@ -36,6 +37,8 @@ def scan(path):
                 for cell in cells:
                     if cell.data_type == 'e':
                         add('excel_error', cell, f'Ошибка Excel {cell.value}; исправьте значение или формулу.')
+        if files is not None:
+            issues.extend(scan_file_refs(book, files))
     finally:
         book.close()
     return issues
@@ -47,9 +50,9 @@ def fingerprint(issue):
             issue['field'], issue['message'])
 
 
-def validate(path, target, output, phase):
-    baseline = Counter(fingerprint(i) for i in scan(target))
-    issues = scan(path)
+def validate(path, target, output, phase, files=None, target_files=None):
+    baseline = Counter(fingerprint(i) for i in scan(target, target_files))
+    issues = scan(path, files)
     for issue in issues:
         key = fingerprint(issue)
         existing = baseline[key] > 0
@@ -57,7 +60,7 @@ def validate(path, target, output, phase):
             baseline[key] -= 1
         issue['existing'] = existing
         issue['severity'] = ('error' if issue['code'] in {'duplicate_part', 'formula_part'}
-                             else 'warning' if existing or issue['code'] == 'part_spaces' else 'error')
+                             else 'warning' if existing or issue['code'] in {'part_spaces', 'file_case', 'unchecked_path'} else 'error')
     result = {'phase': phase, 'issues': issues,
               'errors': sum(i['severity'] == 'error' for i in issues),
               'warnings': sum(i['severity'] == 'warning' for i in issues)}
@@ -65,8 +68,9 @@ def validate(path, target, output, phase):
     return result
 
 
-def require_valid(path, target, output, phase):
-    result = validate(path, target, output, phase)
+def require_valid(path, target, output, phase, files=None, target_files=None):
+    result = validate(path, target, output, phase, files, target_files)
     if result['errors']:
         raise ValueError(f"Проверка компонентов: ошибок {result['errors']}, предупреждений {result['warnings']}. Исправьте ошибки в книге; подробности в отчёте PR и validation.json.")
     return result
+
