@@ -90,7 +90,7 @@ class PipelineTests(unittest.TestCase):
             self.ci.main()
 
     def test_report_then_apply_selected_side_and_keep_independent_changes(self):
-        with self.assertRaises(subprocess.CalledProcessError):
+        with self.assertRaisesRegex(ValueError, 'unresolved'):
             self.invoke()
         report = json.loads((self.artifacts / 'report.json').read_text())
         self.assertEqual(len(report['conflicts']), 1)
@@ -119,7 +119,7 @@ class PipelineTests(unittest.TestCase):
         self.assertEqual(report['conflicts'][0]['choice'], 'ours')
 
     def test_unresolved_apply_does_not_push(self):
-        with self.assertRaises(subprocess.CalledProcessError):
+        with self.assertRaisesRegex(ValueError, 'unresolved'):
             self.invoke(apply=True)
         actual = self.git('--git-dir', str(self.remote), 'rev-parse', 'feature')
         self.assertEqual(actual, self.head_sha)

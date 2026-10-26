@@ -7,7 +7,7 @@ on:
         required: true
         type: string
       conflict_side:
-        description: 'Сторона для спорных полей: ours = ветка PR, theirs = целевая ветка; manual = индивидуальный выбор'
+        description: 'Спорные данные и VBA: ours = ветка PR, theirs = целевая ветка; VBA выбирается целиком; manual = индивидуально'
         required: true
         type: choice
         default: ours

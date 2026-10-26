@@ -36,7 +36,7 @@ def choose(base, ours, theirs, location):
         return ours
     if ours == base:
         return theirs
-    raise Conflict(f'{location}: conflicting changes; base={base!r}; ours={ours!r}; theirs={theirs!r}')
+    raise Conflict(f'{location}: conflicting changes; base={readable(base)!r}; ours={readable(ours)!r}; theirs={readable(theirs)!r}')
 
 
 
@@ -131,6 +131,50 @@ def formula(value, origin, target):
     return Translator(value, origin=origin).translate_formula(target)
 
 
+def style_signature(element):
+    """Namespace-prefix-independent XML key; normalize equivalent booleans."""
+    def value(text):
+        return {'true': '1', 'false': '0'}.get(text, text)
+    return (element.tag, tuple(sorted((k, value(v)) for k, v in element.attrib.items())),
+            (element.text or '').strip(), tuple(style_signature(c) for c in element))
+
+
+class StylePool:
+    """Reconcile cell-XF indices while keeping shared style dependencies fixed."""
+    def __init__(self, books):
+        roots = [ET.fromstring(b.parts['xl/styles.xml']) for b in books]
+        def dependencies(root):
+            return tuple(style_signature(c) for c in root if c.tag != Q('cellXfs'))
+        if len({dependencies(r) for r in roots}) != 1:
+            raise Conflict('Style dependencies changed (fonts/fills/borders/number formats); manual review required')
+        root = deepcopy(roots[1])
+        target = root.find(Q('cellXfs'))
+        if target is None or any(c.tag != Q('xf') for c in target):
+            raise Conflict('Unsupported cell style table')
+        # Keep all ours indices unchanged for existing worksheet metadata.
+        indices = {style_signature(c): i for i, c in enumerate(target)}
+        maps = [None, {i: i for i in range(len(target))}, None]
+        for side in (0, 2):
+            mapping = {}
+            for i, cell_style in enumerate(roots[side].find(Q('cellXfs'))):
+                if cell_style.tag != Q('xf'):
+                    raise Conflict('Unsupported cell style record')
+                key = style_signature(cell_style)
+                if key not in indices:
+                    indices[key] = len(target)
+                    target.append(deepcopy(cell_style))
+                mapping[i] = indices[key]
+            maps[side] = mapping
+        # Duplicate ours entries must compare equal as well as display equally.
+        maps[1] = {i: indices[style_signature(c)] for i, c in enumerate(roots[1].find(Q('cellXfs')))}
+        for book, mapping in zip(books, maps):
+            book.style_map = mapping
+        target.set('count', str(len(target)))
+        self.data = (books[1].parts['xl/styles.xml']
+                     if all(b.parts['xl/styles.xml'] == books[1].parts['xl/styles.xml'] for b in books)
+                     else xml(root))
+
+
 class Book:
     def __init__(self, path):
         self.raw = Path(path).read_bytes()
@@ -183,7 +227,7 @@ class Book:
                     except Conflict:
                         value = ('anchored', coord, value)
                 # Compare content and cell style; cached formula values are ignored.
-                values[cell.column] = (cell.data_type, value, c.get('s'))
+                values[cell.column] = (cell.data_type, value, self.style_map[int(c.get('s', '0'))])
             rows[key] = (number, row, values)
             order.append(key)
         return root, rows, order
@@ -196,6 +240,9 @@ class Book:
         c = deepcopy(src)
         target = f'{get_column_letter(col)}{dest}'
         c.set('r', target)
+        mapped_style = self.style_map[int(c.get('s', '0'))]
+        if c.get('s') is not None or mapped_style:
+            c.set('s', str(mapped_style))
         if c.get('t') == 's':
             si = self.strings[int(c.find(Q('v')).text)]
             c.remove(c.find(Q('v')))
@@ -223,10 +270,12 @@ def merge(base_path, ours_path, theirs_path, output, resolver=None):
     resolver = resolver or Resolver((base_path, ours_path, theirs_path))
     books = [Book(p) for p in (base_path, ours_path, theirs_path)]
     base, ours, theirs = books
+    style_pool = StylePool(books)
     if not (base.sheets == ours.sheets == theirs.sheets):
         raise Conflict('Sheet names/order/relationships changed; manual review required')
     result = dict(ours.parts)
-    handled = set(ours.sheets.values())
+    result['xl/styles.xml'] = style_pool.data
+    handled = set(ours.sheets.values()) | {'xl/styles.xml'}
     # Shared string indices are local to each ZIP; all emitted cells use inline strings.
     handled.update({'xl/sharedStrings.xml', 'xl/calcChain.xml', 'docProps/core.xml', 'docProps/app.xml'})
     tables = {n for b in books for n in b.parts if n.startswith('xl/tables/') and n.endswith('.xml')}
@@ -234,8 +283,6 @@ def merge(base_path, ours_path, theirs_path, output, resolver=None):
     # Preserve all package features. Never silently discard a macro or XML map.
     for name in sorted(set().union(*(b.parts for b in books)) - handled):
         values = [b.parts.get(name, MISSING) for b in books]
-        if name == 'xl/styles.xml' and not (values[0] == values[1] == values[2]):
-            raise Conflict('Styles changed: style-ID reconciliation is not supported')
         if name == 'xl/workbook.xml':
             normalized = []
             for v in values:
@@ -247,7 +294,10 @@ def merge(base_path, ours_path, theirs_path, output, resolver=None):
             if len(set(normalized)) != 1:
                 raise Conflict('Workbook structure changed')
             continue
-        value = choose(*values, name)
+        if name == 'xl/vbaProject.bin':
+            value = resolver.choose(*values, {'kind': 'binary_part', 'part': name})
+        else:
+            value = choose(*values, name)
         if value is MISSING:
             result.pop(name, None)
         else:
@@ -257,20 +307,42 @@ def merge(base_path, ours_path, theirs_path, output, resolver=None):
         parsed = [b.rows(name) for b in books]
         # Ignore viewport and used-range changes; other sheet metadata (including
         # hyperlink anchors/relationships) must be identical to avoid broken links.
-        def metadata(root):
+        def metadata(root, book):
             r = deepcopy(root)
             for child in list(r):
-                if child.tag in {Q('sheetData'), Q('dimension'), Q('sheetViews')}:
+                if child.tag in {Q('sheetData'), Q('dimension'), Q('sheetViews'), Q('cols')}:
                     r.remove(child)
-            return ET.tostring(r, method='c14n')
-        if len({metadata(p[0]) for p in parsed}) != 1:
+            for col in r.iter(Q('col')):
+                if col.get('style') is not None:
+                    col.set('style', str(book.style_map[int(col.get('style'))]))
+            return style_signature(r)
+        if len({metadata(p[0], book) for p, book in zip(parsed, books)}) != 1:
             raise Conflict(f'{name}: worksheet metadata changed; manual review required')
         root = deepcopy(parsed[1][0])
+        column_nodes = []
+        for parsed_sheet, book in zip(parsed, books):
+            cols = deepcopy(parsed_sheet[0].find(Q('cols')))
+            if cols is not None:
+                for col in cols:
+                    if col.get('style') is not None:
+                        col.set('style', str(book.style_map[int(col.get('style'))]))
+            column_nodes.append(cols)
+        signatures = [style_signature(c) if c is not None else MISSING for c in column_nodes]
+        selected = resolver.choose(*signatures, {'kind': 'column_layout', 'sheet': name})
+        existing = root.find(Q('cols'))
+        position = list(root).index(existing) if existing is not None else list(root).index(root.find(Q('sheetData')))
+        if existing is not None:
+            root.remove(existing)
+        if selected is not MISSING:
+            source = next(i for i in (1, 2, 0) if signatures[i] == selected)
+            root.insert(position, column_nodes[source])
         data = root.find(Q('sheetData'))
         data.clear()
         maps = [p[1] for p in parsed]
         headers = [m.get(('fixed', 1)) for m in maps]
-        if any(h is None for h in headers) or not (headers[0][2] == headers[1][2] == headers[2][2]):
+        schemas = [{col: value[:2] for col, value in h[2].items() if value[1] is not None}
+                   if h else None for h in headers]
+        if any(h is None for h in headers) or not (schemas[0] == schemas[1] == schemas[2]):
             raise Conflict(f'{name}: column schema changed')
         for key, record in maps[0].items():
             for mapping in maps[1:]:
@@ -300,10 +372,12 @@ def merge(base_path, ours_path, theirs_path, output, resolver=None):
                 raise Conflict(f'{name}/{key}: cannot move an unkeyed or fixed row')
             source = next(i for i in (1, 2, 0) if records[i])
             attributes = [dict(r[1].attrib) if r else MISSING for r in records]
-            for attr in attributes:
+            for side, attr in enumerate(attributes):
                 if attr is not MISSING:
                     attr.pop('r', None)
                     attr.pop('spans', None)
+                    if 's' in attr:
+                        attr['s'] = str(books[side].style_map[int(attr['s'])])
             selected_attrs = resolver.choose(*attributes, {**context, 'kind': 'row_format'})
             row = deepcopy(records[source][1])
             row.attrib.clear()
