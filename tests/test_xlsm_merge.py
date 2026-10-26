@@ -241,6 +241,60 @@ class MergeTests(unittest.TestCase):
             merge(self.base, self.ours, self.theirs, self.output, resolver)
         self.assertFalse(self.output.exists())
 
+    def style_variant(self, name, coordinate, wrap, value):
+        from copy import deepcopy
+        p = self.variant(name, {coordinate: value})
+        with ZipFile(p) as z:
+            parts = {n: z.read(n) for n in z.namelist()}
+        root = E.fromstring(parts['xl/styles.xml'])
+        styles = root.find(Q('cellXfs'))
+        added = deepcopy(styles[0])
+        E.SubElement(added, Q('alignment'), wrapText='1' if wrap else '0', horizontal='center')
+        styles.append(added)
+        styles.set('count', str(len(styles)))
+        sheet = E.fromstring(parts['xl/worksheets/sheet1.xml'])
+        sheet.find('.//' + Q('c') + "[@r='" + coordinate + "']").set('s', str(len(styles)-1))
+        parts['xl/styles.xml'] = E.tostring(root)
+        parts['xl/worksheets/sheet1.xml'] = E.tostring(sheet)
+        with ZipFile(p, 'w', ZIP_DEFLATED) as z:
+            for n, data in parts.items():
+                z.writestr(n, data)
+        return p
+
+    def test_reconcile_independent_styles_with_colliding_ids(self):
+        self.ours = self.style_variant('ours', 'B2', True, 20)
+        self.theirs = self.style_variant('theirs', 'C2', False, 'theirs')
+        s = self.run_merge()
+        self.assertEqual(s['B2'].value, 20)
+        self.assertEqual(s['C2'].value, 'theirs')
+        self.assertTrue(s['B2'].alignment.wrapText)
+        self.assertFalse(s['C2'].alignment.wrapText)
+        self.assertEqual(s['C2'].alignment.horizontal, 'center')
+
+    def test_style_change_on_header_is_not_a_schema_change(self):
+        self.theirs = self.style_variant('theirs', 'B1', True, 'Value')
+        self.assertTrue(self.run_merge()['B1'].alignment.wrapText)
+
+    def test_style_dependency_change_still_blocks(self):
+        with ZipFile(self.base) as z:
+            root = E.fromstring(z.read('xl/styles.xml'))
+        root.find(Q('fonts'))[0].find(Q('name')).set('val', 'Another Font')
+        self.theirs = self.variant('theirs', {}, part=('xl/styles.xml', E.tostring(root)))
+        with self.assertRaisesRegex(Conflict, 'Style dependencies'):
+            self.run_merge()
+
+    def test_vba_conflict_requires_choice_and_preserves_chosen_bytes(self):
+        self.base = self.variant('macro-base', {}, part=('xl/vbaProject.bin', b'base'))
+        self.ours = self.variant('ours', {}, part=('xl/vbaProject.bin', b'ours'))
+        self.theirs = self.variant('theirs', {}, part=('xl/vbaProject.bin', b'theirs'))
+        doc = self.discover()
+        self.assertEqual(doc['conflicts'][0]['kind'], 'binary_part')
+        self.assertIn('sha256', doc['conflicts'][0]['ours'])
+        doc['conflicts'][0]['choice'] = 'theirs'
+        self.resolved(doc)
+        with ZipFile(self.output) as z:
+            self.assertEqual(z.read('xl/vbaProject.bin'), b'theirs')
+
     def test_real_library_parallel_additions(self):
         self.base = Path(__file__).resolve().parents[1] / 'Database/Hydrolib_bd.xlsm'
         n = openpyxl.load_workbook(self.base)['Chips'].max_row + 1
