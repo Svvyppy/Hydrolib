@@ -8,6 +8,7 @@ import tempfile
 import urllib.request
 import urllib.error
 from fork_result import publish, check_snapshot
+from validate import require_valid
 
 ROOT = Path(__file__).resolve().parents[2]
 WORKBOOK = 'Database/Hydrolib_bd.xlsm'
@@ -69,6 +70,7 @@ def main():
             p = ARTIFACTS / (label + '.xlsm')
             p.write_bytes(git('show', f'{sha}:{WORKBOOK}', capture_output=True).stdout)
             paths.append(str(p))
+        require_valid(paths[1], paths[2], ARTIFACTS / 'validation.json', 'PR')
         command = [sys.executable, str(ROOT / 'tools/xlsm_merge/merge.py'), *paths,
                    str(ARTIFACTS / 'Hydrolib_bd.xlsm'), '--conflict-side', conflict_side, '--report', str(ARTIFACTS / 'report.json')]
         if resolution_path:
@@ -79,6 +81,7 @@ def main():
             report = json.loads(report_path.read_text(encoding='utf-8')) if report_path.exists() else {}
             message = report.get('message', 'Workbook merge failed; see report artifact')
             raise ValueError(message)
+        require_valid(ARTIFACTS / 'Hydrolib_bd.xlsm', paths[2], ARTIFACTS / 'validation.json', 'result')
         if apply:
             # Use the trusted driver's absolute path, even if the PR edits tools/.
             subprocess.run([sys.executable, str(ROOT / 'tools/xlsm_merge/install.py')], cwd=ROOT, check=True)
@@ -119,3 +122,4 @@ if __name__ == '__main__':
         (ARTIFACTS / 'failure.txt').write_text(str(error), encoding='utf-8')
         print(error, file=sys.stderr)
         sys.exit(1)
+
